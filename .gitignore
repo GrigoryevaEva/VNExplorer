@@ -28,3 +28,18 @@ dist-ssr
 /docs/agents/issue-tracker.md
 /docs/agents/triage-labels.md
 /docs/agents/domain.md
+
+# Local agent planning and execution
+/.scratch/
+/.agents/
+/.codex/
+/.worktrees/
+/GLOSSARY.md
+/docs/product-design.md
+/docs/architecture.md
+/docs/adr/
+
+# Browser test artifacts
+/playwright-report/
+/test-results/
+/.playwright/

@@ -1,5 +1,15 @@
-# Vue 3 + TypeScript + Vite
+# VNDB Explorer
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+A personal visual novel catalog built with Vue, TypeScript, and Vite. Development is in progress on `dev`; the application is not complete yet.
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+## Development
+
+Requires Node.js 24 and npm. Run `npm ci`, `npm run dev`, and `npm run build`.
+
+Use a separate `task/<name>` branch based on current `dev` for each task. Include a changeset with the change before merging back.
+
+## Versioning
+
+Run `npm run changeset` for every task. Preparing a version consumes pending notes into the version and CHANGELOG. Pushing a `vX.Y.Z` tag publishes a GitHub Release with a static-site ZIP. See [release instructions](docs/releasing.md) and [the changeset format](.changeset/README.md).
+
+The final README will describe usage, deployment, and limitations once those features exist.

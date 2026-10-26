@@ -1,0 +1,44 @@
+name: Checks
+on:
+  pull_request:
+    branches: [dev]
+  push:
+    branches: [dev, 'task/**']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Require this branch's changeset
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BASE: ${{ github.event.before }}
+        run: |
+          base="$PR_BASE"
+          if [ -z "$base" ]; then base="$PUSH_BASE"; fi
+          if [ -z "$base" ] || [[ "$base" =~ ^0+$ ]]; then base=origin/dev; fi
+          npm run changeset:check -- "$base"
+      - run: npm run build
+      - name: Browser checks
+        run: |
+          if node -e "process.exit(JSON.parse(require('fs').readFileSync('package.json')).scripts['test:e2e'] ? 0 : 1)"; then
+            npx playwright install --with-deps chromium
+            npm run test:e2e
+          fi
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-results
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore

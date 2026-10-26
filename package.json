@@ -6,12 +6,17 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "changeset": "changeset",
+    "changeset:check": "node scripts/check-changeset.mjs",
+    "version:release": "changeset version && npm install --package-lock-only",
+    "release:tag": "node scripts/tag-release.mjs"
   },
   "dependencies": {
     "vue": "^3.5.44"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "@types/node": "^24.19.2",
     "@vitejs/plugin-vue": "^6.0.10",
     "@vue/tsconfig": "^0.9.1",
