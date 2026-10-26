@@ -1,0 +1,32 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Browser checks
+        run: |
+          if node -e "process.exit(JSON.parse(require('fs').readFileSync('package.json')).scripts['test:e2e'] ? 0 : 1)"; then
+            npx playwright install --with-deps chromium
+            npm run test:e2e
+          fi
+      - run: npm run build
+      - name: Assemble release
+        run: |
+          node scripts/release-notes.mjs "$GITHUB_REF_NAME" > release-notes.md
+          cd dist
+          zip -r "../vndb-explorer-$GITHUB_REF_NAME.zip" .
+      - name: Publish static build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "$GITHUB_REF_NAME" "vndb-explorer-$GITHUB_REF_NAME.zip" --verify-tag --title "VNDB Explorer $GITHUB_REF_NAME" --notes-file release-notes.md
