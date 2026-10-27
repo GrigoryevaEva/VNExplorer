@@ -37,7 +37,7 @@ h1, h2, p { margin: 0; }
 .catalog-page { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); padding: 30px 38px 0; gap: 29px; }
 .catalog-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .eyebrow { font-size: 10px; letter-spacing: 1.7px; font-weight: 700; color: var(--muted); }
-.catalog-heading h1 { font-size: clamp(36px, 4.4vw, 64px); letter-spacing: -3px; font-weight: 800; line-height: 1.15; margin-top: 9px; }
+.catalog-heading h1 { font-size: clamp(36px, 4.4vw, 64px); letter-spacing: -3px; font-weight: 800; line-height: 1.15; margin-top: 9px; white-space: nowrap; }
 .catalog-heading h1 span { color: var(--lime); }
 .chapter-stamp { border: 1px solid #656c5d; border-radius: 50%; width: 173px; height: 95px; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(-8deg); margin: 0 27px; }
 .chapter-stamp span { font-size: 8px; letter-spacing: 1px; }
@@ -50,13 +50,14 @@ h1, h2, p { margin: 0; }
 .catalog-sort-label { font-size: 11px; color: var(--muted); }
 .catalog-sort-label span { color: var(--lime); margin-left: 8px; }
 .catalog-results { min-height: 0; overflow: auto; scrollbar-color: #5c6556 transparent; scrollbar-width: thin; padding: 0 9px 20px 0; outline-offset: -3px; }
-.novel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 22px 18px; align-content: start; }
-.novel-card { min-width: 0; border-radius: 17px; overflow: hidden; background: #30362e; }
+.novel-grid { --masonry-gap: 22px; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); grid-auto-rows: 1px; column-gap: 18px; align-content: start; }
+.novel-card { min-width: 0; align-self: start; border-radius: 17px; overflow: hidden; background: #30362e; }
 .novel-card__art { display: block; position: relative; background: #10130f; }
 .novel-card__title a { text-decoration: none; }
 .novel-card__title a:hover { color: var(--lime); }
 .cover-image { position: relative; aspect-ratio: 4/5; background: #11150f; display: grid; place-items: center; overflow: hidden; }
 .cover-image img { width: 100%; height: 100%; object-fit: contain; position: absolute; inset: 0; opacity: 0; transition: opacity .2s; }
+.cover-image--card img { object-fit: cover; }
 .cover-image--loaded img { opacity: 1; }
 .cover-fallback { height: 100%; width: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 15px; color: #b3c0a8; font-size: 11px; background: repeating-linear-gradient(135deg, #262d23, #262d23 1px, #20271e 1px, #20271e 13px); }
 .cover-fallback__symbol { font-size: 63px; color: var(--mint); }
@@ -128,12 +129,12 @@ h1, h2, p { margin: 0; }
   .app-header nav { margin-left: auto; }
   .nav-link { padding: 23px 0; font-size: 12px; }
   .catalog-page { padding: 23px 17px 0; gap: 23px; }
-  .catalog-heading h1 { font-size: 42px; letter-spacing: -2px; max-width: 340px; }
+  .catalog-heading h1 { font-size: clamp(27px, 7vw, 42px); letter-spacing: -1.3px; }
   .eyebrow { font-size: 8px; letter-spacing: 1.2px; }
   .chapter-stamp, .catalog-sidebar { display: none; }
   .catalog-workspace { display: block; }
   .catalog-feed { height: 100%; grid-template-rows: 36px minmax(0, 1fr) 56px; }
-  .novel-grid { gap: 16px 12px; }
+  .novel-grid { --masonry-gap: 16px; column-gap: 12px; }
   .catalog-results { padding-right: 3px; }
   .novel-card { border-radius: 12px; }
   .novel-card__ticket { padding: 14px 11px; min-height: 108px; }
@@ -152,7 +153,6 @@ h1, h2, p { margin: 0; }
 }
 @media(max-width: 350px) {
   .novel-grid { grid-template-columns: 1fr; }
-  .catalog-heading h1 { font-size: 35px; }
   .novel-card__date { max-width: none; }
   .cover-image { aspect-ratio: 4/4.6; }
 }
