@@ -14,7 +14,10 @@ test('complete language directory stays light until expansion and loads every re
       expect(body.fields).toBe('id,languages.lang')
       return route.fulfill({ json: { results: body.page === 1 ? manifest.slice(0, 100) : manifest.slice(100), more: body.page === 1 } })
     }
-    const ids = body.filters[2] as string[]
+    expect(['or', 'id']).toContain(body.filters[0])
+    const ids = body.filters[0] === 'id' ? [body.filters[2] as string] : (body.filters.slice(1) as [string, string, string][]).map(filter => filter[2])
+    if (body.filters[0] === 'or') expect(ids.length).toBeGreaterThan(1)
+    for (const id of ids) expect(id).toMatch(/^r[1-9]\d*$/)
     expect(ids.length).toBeLessThanOrEqual(100)
     if (ids.includes('r101')) await gate
     return route.fulfill({ json: { results: ids.map(id => ({ id, title: `Edition ${id}`, released: '2020', minage: null, official: false, platforms: ['win'], extlinks: [] })), more: false } })
@@ -48,7 +51,10 @@ test('failed release batch keeps loaded rows and retry preserves dates, ages and
   await page.route('https://api.vndb.org/kana/release', route => {
     const body = route.request().postDataJSON()
     if (!body.fields.includes('title')) return route.fulfill({ json: { results: body.page === 1 ? manifest.slice(0, 100) : manifest.slice(100), more: body.page === 1 } })
-    const ids = body.filters[2] as string[]
+    expect(['or', 'id']).toContain(body.filters[0])
+    const ids = body.filters[0] === 'id' ? [body.filters[2] as string] : (body.filters.slice(1) as [string, string, string][]).map(filter => filter[2])
+    if (body.filters[0] === 'or') expect(ids.length).toBeGreaterThan(1)
+    for (const id of ids) expect(id).toMatch(/^r[1-9]\d*$/)
     batches.push(ids)
     if (ids.includes('r101') && fail) { fail = false; return route.fulfill({ status: 503, json: { error: 'offline' } }) }
     const records = ids.map(id => ({ id, title: `Edition ${id}`, released: 'unknown', minage: null as number | null, official: false, platforms: ['win'], extlinks: [] as { name: string; label: string; url: string }[] }))
@@ -94,3 +100,7 @@ test('failed release batch keeps loaded rows and retry preserves dates, ages and
   await rows.last().scrollIntoViewIfNeeded()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
+
+
+
+

@@ -21,7 +21,7 @@ export async function fetchReleaseDirectory(id: string, signal?: AbortSignal): P
 }
 
 export async function fetchReleaseDetails(ids: string[], signal?: AbortSignal) {
-  const response = await queryVndb<ReleaseDetails>('release', { filters: ['id', '=', ids], fields: 'title,released,minage,official,platforms,extlinks{url,label,name}', results: 100 }, { signal })
+  const response = await queryVndb<ReleaseDetails>('release', { filters: ids.length === 1 ? ['id', '=', ids[0]] : ['or', ...ids.map(id => ['id', '=', id])], fields: 'title,released,minage,official,platforms,extlinks{url,label,name}', results: 100 }, { signal })
   return response.results
 }
 
@@ -48,3 +48,4 @@ export function languageName(code: string) {
 }
 const platforms: Record<string, string> = { win: 'Windows', lin: 'Linux', mac: 'macOS', and: 'Android', ios: 'iOS', web: 'Browser', swi: 'Switch', ps4: 'PS4', ps5: 'PS5', psp: 'PSP', psv: 'PS Vita', ps2: 'PS2', ps3: 'PS3', ps1: 'PlayStation', x3s: 'Xbox Series', xb1: 'Xbox One', dvd: 'DVD Player', bdp: 'Blu-ray Player' }
 export function platformName(code: string) { return platforms[code] ?? code }
+
