@@ -1,4 +1,5 @@
-import { queryVndb } from './client'
+import { isTemporaryVndbError, queryVndb } from './client'
+import { cacheLifetime, queryKey, readResponse, writeResponse } from './cache'
 
 export interface ReleaseAssignment { id: string; languages: { lang: string }[] }
 export interface ReleaseDetails {
@@ -11,18 +12,38 @@ export interface ReleaseDetails {
   extlinks: { name: string; label: string; url: string }[]
 }
 
-export async function fetchReleaseDirectory(id: string, signal?: AbortSignal): Promise<ReleaseAssignment[]> {
+export async function fetchReleaseDirectory(id: string, signal?: AbortSignal, onStale?: () => void): Promise<ReleaseAssignment[]> {
   const releases = new Map<string, ReleaseAssignment>()
   for (let page = 1; ; page++) {
-    const response = await queryVndb<ReleaseAssignment>('release', { filters: ['vn', '=', ['id', '=', id]], fields: 'id,languages.lang', sort: 'id', results: 100, page }, { signal })
+    const response = await queryVndb<ReleaseAssignment>('release', { filters: ['vn', '=', ['id', '=', id]], fields: 'id,languages.lang', sort: 'id', results: 100, page }, { signal, onStale })
     for (const release of response.results) releases.set(release.id, release)
     if (!response.more) return [...releases.values()]
   }
 }
 
-export async function fetchReleaseDetails(ids: string[], signal?: AbortSignal) {
-  const response = await queryVndb<ReleaseDetails>('release', { filters: ids.length === 1 ? ['id', '=', ids[0]] : ['or', ...ids.map(id => ['id', '=', id])], fields: 'title,released,minage,official,platforms,extlinks{url,label,name}', results: 100 }, { signal })
-  return response.results
+const RELEASE_FIELDS = 'title,released,minage,official,platforms,extlinks{url,label,name}'
+export async function fetchReleaseDetails(ids: string[], signal?: AbortSignal, onStale?: () => void) {
+  signal?.throwIfAborted()
+  const key = (id: string) => queryKey('release-record', { filters: ['id', '=', id], fields: RELEASE_FIELDS })
+  const cached = await Promise.all(ids.map(async id => ({ id, response: await readResponse(key(id)) })))
+  signal?.throwIfAborted()
+  const fresh = cached.filter(({ response }) => response && Date.now() >= response.fetchedAt && Date.now() - response.fetchedAt < cacheLifetime('release', { fields: RELEASE_FIELDS }))
+  const freshIds = new Set(fresh.map(record => record.id))
+  const missing = ids.filter(id => !freshIds.has(id))
+  const rows = fresh.flatMap(record => record.response!.data.results as ReleaseDetails[])
+  if (!missing.length) return rows
+  try {
+    const response = await queryVndb<ReleaseDetails>('release', { filters: missing.length === 1 ? ['id', '=', missing[0]] : ['or', ...missing.map(id => ['id', '=', id])], fields: RELEASE_FIELDS, results: 100 }, { signal, onStale })
+    const releases = response.results.filter(release => missing.includes(release.id))
+    if (!response.stale) await Promise.all(releases.map(release => writeResponse(key(release.id), { results: [release], more: false }, response.fetchedAt)))
+    signal?.throwIfAborted()
+    return [...rows, ...releases]
+  } catch (error) {
+    const older = cached.filter(record => !freshIds.has(record.id)).flatMap(record => record.response?.data.results as ReleaseDetails[] ?? [])
+    if (!isTemporaryVndbError(error) || !older.length) throw error
+    onStale?.()
+    return [...rows, ...older]
+  }
 }
 
 export function releaseWebsites(release: ReleaseDetails) {

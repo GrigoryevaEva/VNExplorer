@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import NovelCard from '../ui/NovelCard.vue'
+import CacheNotice from '../ui/CacheNotice.vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { savedNovels, selectSaved, updateSavedSnapshots, type SavedSort } from '../modules/saved/collection'
 import { fetchSavedCards } from '../modules/vndb/saved'
@@ -8,14 +9,16 @@ const sort = ref<SavedSort>('added')
 const novels = computed(() => selectSaved(search.value, sort.value))
 const refreshError = ref(false)
 const refreshing = ref(false)
+const stale = ref(false)
 const request = new AbortController()
 async function refresh() {
   if (!savedNovels.value.length) return
   refreshing.value = true
   refreshError.value = false
+  stale.value = false
   try {
-    const cards = await fetchSavedCards(savedNovels.value.map(novel => novel.id), request.signal)
-    if (!request.signal.aborted) updateSavedSnapshots(cards)
+    const cards = await fetchSavedCards(savedNovels.value.map(novel => novel.id), request.signal, () => { stale.value = true })
+    if (!request.signal.aborted && !stale.value) updateSavedSnapshots(cards)
   } catch { if (!request.signal.aborted) refreshError.value = true }
   finally { refreshing.value = false }
 }
@@ -26,7 +29,7 @@ onBeforeUnmount(() => request.abort())
 <template>
   <section class="saved-page" aria-label="Saved visual novels">
     <header class="catalog-heading"><div><p class="eyebrow">KEPT FOR ANOTHER CHAPTER</p><h1>Your <span>Saved.</span></h1></div></header>
-    <div><div class="saved-toolbar"><label>Search Saved<input v-model="search" type="search" placeholder="Find a kept story…" /></label><label>Sort saved stories<select v-model="sort"><option value="added">Recently added</option><option value="rating">Top rated</option><option value="released">First release · newest</option></select></label></div><p class="saved-refresh" v-if="refreshError">Could not refresh from VNDB. Showing your last-known saved details. <button @click="refresh">Try again</button></p><p class="saved-refresh" v-else-if="refreshing">Showing saved details while checking VNDB…</p></div>
+    <div><CacheNotice v-if="stale && !refreshing" /><div class="saved-toolbar"><label>Search Saved<input v-model="search" type="search" placeholder="Find a kept story…" /></label><label>Sort saved stories<select v-model="sort"><option value="added">Recently added</option><option value="rating">Top rated</option><option value="released">First release · newest</option></select></label></div><p class="saved-refresh" v-if="refreshError">Could not refresh from VNDB. Showing your last-known saved details. <button @click="refresh">Try again</button></p><p class="saved-refresh" v-else-if="refreshing">Showing saved details while checking VNDB…</p></div>
     <div v-if="!savedNovels.length" class="feed-message"><h2>Your collection starts here.</h2><p>Save a story from Catalog to keep it for later.</p><RouterLink to="/">Explore Catalog ↗</RouterLink></div>
     <div v-else class="catalog-results" role="region" aria-label="Saved results" tabindex="0"><div v-if="!novels.length" class="feed-message"><h2>No saved stories match.</h2><p>Try another title or clear your search.</p></div><div v-else class="novel-grid"><NovelCard v-for="novel in novels" :key="novel.id" :novel="novel" /></div></div>
   </section>

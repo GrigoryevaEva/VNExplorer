@@ -22,8 +22,8 @@ export interface VisualNovelDetails extends VisualNovelCard {
 
 export const DETAIL_FIELDS = `${CARD_FIELDS},titles{lang,title,latin,main,official},aliases,description,votecount,length,length_minutes,tags{id,name,spoiler},screenshots{id,url,thumbnail,dims,thumbnail_dims}`
 
-export async function fetchNovelDetails(id: string, signal?: AbortSignal) {
-  const response = await queryVndb<VisualNovelDetails>('vn', { filters: ['id', '=', id], fields: DETAIL_FIELDS, results: 1 }, { signal })
+export async function fetchNovelDetails(id: string, signal?: AbortSignal, onStale?: () => void) {
+  const response = await queryVndb<VisualNovelDetails>('vn', { filters: ['id', '=', id], fields: DETAIL_FIELDS, results: 1 }, { signal, onStale })
   return response.results[0] ?? null
 }
 
