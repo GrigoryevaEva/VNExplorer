@@ -6,6 +6,7 @@ import { formatRating, formatReleaseDate } from '../modules/vndb/format'
 import CoverImage from '../ui/CoverImage.vue'
 import SourceDescription from '../ui/SourceDescription'
 import ScreenshotGallery from '../ui/ScreenshotGallery.vue'
+import ReleaseGroups from '../ui/ReleaseGroups.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -51,6 +52,7 @@ onBeforeUnmount(() => controller?.abort())
       <section class="detail-section" aria-labelledby="description-heading"><h2 id="description-heading">The story</h2><SourceDescription v-if="novel.description" class="detail-description" :text="novel.description" /><p v-else class="detail-empty">No description available.</p></section>
       <section class="detail-section" aria-labelledby="titles-heading"><h2 id="titles-heading">Alternative titles</h2><ul v-if="titles.length" class="detail-titles"><li v-for="title in titles" :key="title">{{ title }}</li></ul><p v-else class="detail-empty">No alternative titles listed.</p></section>
       <ScreenshotGallery :screenshots="novel.screenshots ?? []" />
+      <ReleaseGroups :key="novel.id" :novel-id="novel.id" />
     </article>
   </div>
 </template>
@@ -74,5 +76,6 @@ onBeforeUnmount(() => controller?.abort())
 .detail-empty { color: var(--muted); line-height: 1.6; }
 @media(max-width: 760px) { .detail-page { padding: 24px 18px 60px; } .detail-hero { grid-template-columns: 1fr; gap: 28px; } .detail-cover { width: min(100%, 330px); margin: auto; } .detail-introduction h1 { font-size: 38px; } .detail-facts { gap: 20px; } }
 </style>
+
 
 
