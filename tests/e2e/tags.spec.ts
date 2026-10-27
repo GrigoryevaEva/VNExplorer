@@ -7,7 +7,7 @@ test('complete tag directory supports curated sections and local global search',
   await page.route('https://api.vndb.org/kana/tag', route => {
     const query = route.request().postDataJSON(); tagPages.push(query.page)
     return route.fulfill({ json: { results: query.page === 1 ? [
-      { id: 'g96', name: 'Romance', description: 'Love between characters.', searchable: true },
+      { id: 'g96', name: 'Romance', description: '[b]Love[/b] between characters.', searchable: true },
       { id: 'g2', name: 'Fantasy', description: 'Imaginary worlds.', searchable: true },
       { id: 'g1', name: 'Theme', searchable: false },
     ] : [
@@ -43,7 +43,7 @@ test('one included tag remains a draft until Apply filters and restores from its
     const query = route.request().postDataJSON(); catalog.push(query)
     return route.fulfill({ json: { results: [{ id: 'v1', title: JSON.stringify(query.filters).includes('g96') ? 'Romantic story' : 'Initial story', image: null, rating: 80, released: '2020' }], more: false, count: 1 } })
   })
-  await page.route('https://api.vndb.org/kana/tag', route => route.fulfill({ json: { results: [{ id: 'g96', name: 'Romance', description: 'Love between characters.', searchable: true }], more: false } }))
+  await page.route('https://api.vndb.org/kana/tag', route => route.fulfill({ json: { results: [{ id: 'g96', name: 'Romance', description: '[b]Love[/b] between characters.', searchable: true }], more: false } }))
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Initial story' })).toBeVisible()
   await page.getByRole('button', { name: 'Browse tags' }).click()
@@ -75,7 +75,7 @@ test.describe('touch access', () => {
   await page.route('https://api.vndb.org/kana/vn', route => route.fulfill({ json: { results: [], more: false, count: 0 } }))
   await page.route('https://api.vndb.org/kana/tag', route => {
     attempts++
-    return attempts === 1 ? route.fulfill({ status: 503, json: {} }) : route.fulfill({ json: { results: [{ id: 'g96', name: 'Romance', description: 'Love between characters.', searchable: true }], more: false } })
+    return attempts === 1 ? route.fulfill({ status: 503, json: {} }) : route.fulfill({ json: { results: [{ id: 'g96', name: 'Romance', description: '[b]Love[/b] between characters.', searchable: true }], more: false } })
   })
   await page.goto('/')
   await page.getByRole('button', { name: 'Filters', exact: true }).click()
@@ -96,4 +96,5 @@ test.describe('touch access', () => {
 })
 
 })
+
 

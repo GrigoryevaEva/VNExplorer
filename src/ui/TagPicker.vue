@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import SourceDescription from './SourceDescription'
 import { loadTagDirectory, tagSections, type DirectoryTag } from '../modules/tags/directory'
 const props = defineProps<{ selected: string }>()
 const emit = defineEmits<{ select: [id: string]; done: [] }>()
@@ -33,7 +34,7 @@ onMounted(() => { dialog.value?.showModal(); void load() })
     <div v-else-if="error" role="alert"><p>{{ error }}</p><button class="button button--lime" @click="load">Retry tags</button></div>
     <div v-else class="tag-results" role="region" aria-label="Tag directory" tabindex="0">
       <p class="tag-count">{{ shown.length }} tags{{ search.trim() ? ' across all sections' : '' }}</p>
-      <ul><li v-for="tag in shown" :key="tag.id"><div class="tag-row"><strong>{{ tag.name }}</strong><button class="tag-info" :aria-label="`About ${tag.name}`" :aria-expanded="about === tag.id" :aria-controls="`description-${tag.id}`" @click="about = about === tag.id ? '' : tag.id">Info</button><button class="tag-include" :aria-label="`Include ${tag.name}`" :aria-pressed="props.selected === tag.id" @click="emit('select', props.selected === tag.id ? '' : tag.id)">Include</button></div><p v-if="about === tag.id" :id="`description-${tag.id}`" class="tag-description">{{ tag.description || 'No description available.' }}</p></li></ul>
+      <ul><li v-for="tag in shown" :key="tag.id"><div class="tag-row"><strong>{{ tag.name }}</strong><button class="tag-info" :aria-label="`About ${tag.name}`" :aria-expanded="about === tag.id" :aria-controls="`description-${tag.id}`" @click="about = about === tag.id ? '' : tag.id">Info</button><button class="tag-include" :aria-label="`Include ${tag.name}`" :aria-pressed="props.selected === tag.id" @click="emit('select', props.selected === tag.id ? '' : tag.id)">Include</button></div><SourceDescription v-if="about === tag.id" :id="`description-${tag.id}`" class="tag-description" :text="tag.description || 'No description available.'" /></li></ul>
       <p v-if="!shown.length">No tags found. Try searching all tags.</p>
     </div>
   </dialog>
@@ -61,3 +62,4 @@ strong { flex: 1; font-size: 14px; overflow-wrap: anywhere; }
 .tag-description { color: var(--muted); white-space: pre-line; font-size: 13px; line-height: 1.6; padding: 12px 0; overflow-wrap: anywhere; }
 @media(max-width: 760px) { .tag-picker { width: calc(100vw - 16px); height: calc(100dvh - 16px); max-height: none; max-width: none; padding: 16px; } .tag-picker[open] { gap: 14px; } h2 { font-size: 30px; } nav button { padding: 10px; font-size: 11px; } .tag-row { gap: 5px; } strong { font-size: 12px; } }
 </style>
+
