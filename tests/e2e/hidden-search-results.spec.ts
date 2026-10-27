@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test'
 for (const mobile of [false, true]) {
   test(`empty filtered title search explains the exact total and recovers without filters (${mobile ? 'phone' : 'desktop'})`, async ({ page }) => {
     if (mobile) await page.setViewportSize({ width: 390, height: 844 })
+    await page.route('https://api.vndb.org/kana/tag', route => route.fulfill({ json: { results: [{ id: 'g4', name: 'Fantasy', description: '' }], more: false } }))
     const queries: Record<string, unknown>[] = []
     await page.route('https://api.vndb.org/kana/vn', async route => {
       const query = route.request().postDataJSON()
@@ -10,7 +11,7 @@ for (const mobile of [false, true]) {
       const recovered = query.results !== 0 && JSON.stringify(query.filters) === JSON.stringify(['search', '=', 'story'])
       await route.fulfill({ json: { results: recovered ? [{ id: 'v1', title: 'Recovered story', released: '2009', rating: 80, image: null }] : [], more: recovered, count: query.results === 0 || recovered ? 73 : 0 } })
     })
-    await page.goto('/?q=story&language=ru&sort=released&page=3')
+    await page.goto('/?q=story&language=ru&tag=g4&sort=released&page=3')
     await expect(page.getByText('73 matches hidden by filters.', { exact: true })).toBeVisible()
     expect(queries).toHaveLength(2)
     expect(queries[1]).toMatchObject({ filters: ['search', '=', 'story'], count: true, results: 0 })
@@ -20,11 +21,14 @@ for (const mobile of [false, true]) {
     await expect(page.getByRole('searchbox', { name: 'Search titles' })).toHaveValue('story')
     if (mobile) await page.getByRole('button', { name: 'Filters', exact: true }).click()
     await expect(page.getByRole('radio', { name: 'All', exact: true })).toBeChecked()
+    await expect(page.getByRole('button', { name: /Remove included tag/ })).toHaveCount(0)
     expect(queries).toHaveLength(3)
   })
 }
 
-test('failed diagnostic count is an error with retry, never a missing title', async ({ page }) => {
+for (const mobile of [false, true]) {
+test(`failed diagnostic count is retriable, never a missing title (${mobile ? 'phone' : 'desktop'})`, async ({ page }) => {
+  if (mobile) await page.setViewportSize({ width: 390, height: 844 })
   let failCount = true
   await page.route('https://api.vndb.org/kana/vn', async route => {
     const query = route.request().postDataJSON()
@@ -38,6 +42,7 @@ test('failed diagnostic count is an error with retry, never a missing title', as
   await page.getByRole('button', { name: /Try again/ }).click()
   await expect(page.getByText('42 matches hidden by filters.', { exact: true })).toBeVisible()
 })
+}
 
 for (const mobile of [false, true]) {
   test(`a true zero title count stays empty (${mobile ? 'phone' : 'desktop'})`, async ({ page }) => {
