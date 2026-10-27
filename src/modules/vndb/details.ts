@@ -1,7 +1,16 @@
 import { queryVndb, CARD_FIELDS } from './client'
 import type { VisualNovelCard } from './types'
 
+export interface Screenshot {
+  id: string
+  url: string
+  thumbnail: string
+  dims: [number, number]
+  thumbnail_dims: [number, number]
+}
+
 export interface VisualNovelDetails extends VisualNovelCard {
+  screenshots: Screenshot[]
   titles: { lang: string; title: string; latin: string | null; main: boolean; official: boolean }[]
   aliases: string[]
   description: string | null
@@ -10,7 +19,7 @@ export interface VisualNovelDetails extends VisualNovelCard {
   length_minutes: number | null
 }
 
-export const DETAIL_FIELDS = `${CARD_FIELDS},titles{lang,title,latin,main,official},aliases,description,votecount,length,length_minutes`
+export const DETAIL_FIELDS = `${CARD_FIELDS},titles{lang,title,latin,main,official},aliases,description,votecount,length,length_minutes,screenshots{id,url,thumbnail,dims,thumbnail_dims}`
 
 export async function fetchNovelDetails(id: string, signal?: AbortSignal) {
   const response = await queryVndb<VisualNovelDetails>('vn', { filters: ['id', '=', id], fields: DETAIL_FIELDS, results: 1 }, { signal })
