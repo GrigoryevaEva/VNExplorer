@@ -4,10 +4,19 @@ import { useRoute, useRouter } from 'vue-router'
 import { CATALOG_PAGE_SIZE, fetchCatalogSelection, selectionFromQuery, selectionToQuery, type CatalogSelection } from '../modules/catalog/selection'
 import type { VisualNovelCard } from '../modules/vndb/types'
 import NovelCard from '../ui/NovelCard.vue'
+import TagPicker from '../ui/TagPicker.vue'
+import { loadTagDirectory } from '../modules/tags/directory'
+const tagsOpen = ref(false)
+const filtersOpen = ref(false)
 const route = useRoute()
 const router = useRouter()
 const applied = computed(() => selectionFromQuery(route.query))
 const draftSearch = ref(applied.value.search)
+const draftTag = ref(applied.value.includedTag)
+const tagNames = ref<Record<string, string>>({})
+const draftTagName = computed(() => tagNames.value[draftTag.value] ?? draftTag.value)
+async function readTagNames() { try { const tags = await loadTagDirectory(() => {}); tagNames.value = Object.fromEntries(tags.map(tag => [tag.id, tag.name])) } catch { /* The picker exposes retry if loading fails. */ } }
+watch(draftTag, tag => { if (tag) void readTagNames() }, { immediate: true })
 const novels = ref<VisualNovelCard[]>([])
 const loading = ref(true)
 const error = ref('')
@@ -27,6 +36,7 @@ async function navigate(selection: CatalogSelection) {
   await router.push({ query: selectionToQuery(selection), state: { catalogScroll: 0 } })
 }
 function submit() { void navigate({ ...applied.value, search: draftSearch.value.trim(), page: 1 }) }
+function applyFilters() { filtersOpen.value = false; void navigate({ ...applied.value, includedTag: draftTag.value, page: 1 }) }
 function changeSort(event: Event) { void navigate({ ...applied.value, sort: (event.target as HTMLSelectElement).value as CatalogSelection['sort'], page: 1 }) }
 async function load() {
   const request = ++generation
@@ -53,6 +63,7 @@ async function load() {
     }
   }
 }
+watch(() => applied.value.includedTag, tag => { draftTag.value = tag })
 watch(() => applied.value.search, search => { draftSearch.value = search })
 watch(() => route.fullPath, () => { void load() }, { immediate: true })
 onBeforeUnmount(() => { rememberScroll(); generation++; controller?.abort() })
@@ -65,7 +76,7 @@ onBeforeUnmount(() => { rememberScroll(); generation++; controller?.abort() })
       <div class="catalog-feed">
         <div class="catalog-toolbar catalog-toolbar--search">
           <form class="catalog-search" role="search" @submit.prevent="submit"><label class="visually-hidden" for="title-search">Search titles</label><input id="title-search" v-model="draftSearch" type="search" placeholder="A title, a world, a new story…" /><button class="button button--lime" type="submit">Search <span aria-hidden="true">↗</span></button></form>
-          <label class="catalog-order"><span class="visually-hidden">Sort stories</span><select :value="applied.sort" @change="changeSort"><option value="rating">Top rated ★</option><option value="released">First release · newest</option></select></label>
+          <button class="button button--lime mobile-filters" @click="filtersOpen = true">Filters</button><label class="catalog-order"><span class="visually-hidden">Sort stories</span><select :value="applied.sort" @change="changeSort"><option value="rating">Top rated ★</option><option value="released">First release · newest</option></select></label>
         </div>
         <div ref="grid" class="catalog-results" role="region" aria-label="Catalog results" tabindex="0" :aria-busy="loading" @scroll.passive="rememberScroll">
           <div v-if="loading" class="feed-message" role="status"><span class="message-symbol" aria-hidden="true">✳</span><h2>Opening a new chapter…</h2><p>Getting stories from VNDB.</p></div>
@@ -75,16 +86,20 @@ onBeforeUnmount(() => { rememberScroll(); generation++; controller?.abort() })
         </div>
         <footer class="catalog-footer"><span class="catalog-result-count">{{ loading ? 'Loading stories…' : error ? 'Connection interrupted' : count === undefined ? `${novels.length} stories on this page` : `${count.toLocaleString('en')} stories` }}</span><nav class="catalog-pagination" aria-label="Catalog pages"><button aria-label="Previous page" :disabled="applied.page <= 1" @click="navigate({ ...applied, page: applied.page - 1 })">←</button><template v-for="(page, index) in pageNumbers" :key="page"><span v-if="index && page > pageNumbers[index - 1]! + 1" aria-hidden="true">…</span><button :aria-label="`Page ${page}`" :aria-current="page === applied.page ? 'page' : undefined" @click="navigate({ ...applied, page })">{{ page }}</button></template><button aria-label="Next page" :disabled="!more || loading" @click="navigate({ ...applied, page: applied.page + 1 })">→</button></nav></footer>
       </div>
-      <aside class="catalog-sidebar" aria-label="Current catalog selection">
-        <section class="selection-card"><p class="eyebrow">YOUR SELECTION</p><h2>Good stories.<br />No limits.</h2><dl><div><dt>Language</dt><dd>All languages <span aria-hidden="true">↗</span></dd></div><div><dt>Tags</dt><dd>Anything goes <span aria-hidden="true">✳</span></dd></div><div><dt>Order</dt><dd>{{ applied.sort === 'rating' ? 'Highest rated first' : 'Newest first release' }} <span aria-hidden="true">★</span></dd></div></dl><div class="selection-card__note"><span aria-hidden="true">↳</span> Start with the stories readers love.</div></section>
+      <aside class="catalog-sidebar" :class="{ 'catalog-sidebar--open': filtersOpen }" aria-label="Current catalog selection"><button v-if="filtersOpen" class="button close-filters" @click="filtersOpen = false">Close filters</button>
+        <section class="selection-card"><p class="eyebrow">YOUR SELECTION</p><h2>Good stories.<br />No limits.</h2><dl><div><dt>Language</dt><dd>All languages <span aria-hidden="true">↗</span></dd></div><div><dt>Tags</dt><dd v-if="draftTag"><button class="tag-chip" :aria-label="`Remove included tag ${draftTagName}`" @click="draftTag = ''">{{ draftTagName }} ×</button></dd><dd v-else>Anything goes <span aria-hidden="true">✳</span></dd></div><div><dt>Order</dt><dd>{{ applied.sort === 'rating' ? 'Highest rated first' : 'Newest first release' }} <span aria-hidden="true">★</span></dd></div></dl><button class="button button--lime" @click="tagsOpen = true; readTagNames()">Browse tags</button><button class="button button--lime apply-tags" @click="applyFilters">Apply filters</button><div class="selection-card__note"><span aria-hidden="true">↳</span> Start with the stories readers love.</div></section>
         <div class="reading-card"><span class="reading-card__flower" aria-hidden="true">✳</span><p>Different worlds.<br /><strong>Same curiosity.</strong></p><span class="reading-card__bottom">GET LOST IN A GOOD ONE ↗</span></div>
         <p class="source-note">Stories & artwork from <a href="https://vndb.org" target="_blank" rel="noreferrer">VNDB ↗</a></p>
       </aside>
     </div>
+    <TagPicker v-if="tagsOpen" :selected="draftTag" @select="draftTag = $event" @done="tagsOpen = false" />
   </section>
 </template>
 
 <style scoped>
+.mobile-filters { display: none; }
+.apply-tags { margin: 10px 0; }
+.tag-chip { color: inherit; background: #ffffff55; border-radius: 8px; padding: 10px; overflow-wrap: anywhere; text-align: left; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .catalog-feed { grid-template-rows: 72px minmax(0, 1fr) 61px; }
 .catalog-toolbar--search { align-items: flex-start; gap: 12px; }
@@ -97,6 +112,9 @@ onBeforeUnmount(() => { rememberScroll(); generation++; controller?.abort() })
 .catalog-pagination button[aria-current] { background: var(--lime); color: var(--bg); border-color: var(--lime); font-weight: bold; }
 .catalog-pagination button:disabled { opacity: .35; }
 @media(max-width: 760px) {
+  .mobile-filters { display: inline-flex; height: 32px; padding: 7px 13px; }
+  .catalog-sidebar--open { display: block; position: fixed; inset: 8px; z-index: 5; background: var(--bg); overflow: auto; border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+  .close-filters { margin-bottom: 15px; }
   .catalog-feed { grid-template-rows: 109px minmax(0, 1fr) 82px; }
   .catalog-toolbar--search { flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
   .catalog-search { flex-basis: 100%; }
@@ -108,5 +126,8 @@ onBeforeUnmount(() => { rememberScroll(); generation++; controller?.abort() })
   .catalog-footer { flex-direction: column; justify-content: center; gap: 5px; }
 }
 </style>
+
+
+
 
 
