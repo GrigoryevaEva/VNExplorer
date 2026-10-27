@@ -10,6 +10,7 @@ export interface Screenshot {
 }
 
 export interface VisualNovelDetails extends VisualNovelCard {
+  tags: { id: string; name: string; spoiler: number }[]
   screenshots: Screenshot[]
   titles: { lang: string; title: string; latin: string | null; main: boolean; official: boolean }[]
   aliases: string[]
@@ -19,11 +20,15 @@ export interface VisualNovelDetails extends VisualNovelCard {
   length_minutes: number | null
 }
 
-export const DETAIL_FIELDS = `${CARD_FIELDS},titles{lang,title,latin,main,official},aliases,description,votecount,length,length_minutes,screenshots{id,url,thumbnail,dims,thumbnail_dims}`
+export const DETAIL_FIELDS = `${CARD_FIELDS},titles{lang,title,latin,main,official},aliases,description,votecount,length,length_minutes,tags{id,name,spoiler},screenshots{id,url,thumbnail,dims,thumbnail_dims}`
 
 export async function fetchNovelDetails(id: string, signal?: AbortSignal) {
   const response = await queryVndb<VisualNovelDetails>('vn', { filters: ['id', '=', id], fields: DETAIL_FIELDS, results: 1 }, { signal })
   return response.results[0] ?? null
+}
+
+export function spoilerFreeTags(novel: VisualNovelDetails) {
+  return (novel.tags ?? []).filter(tag => tag.spoiler === 0)
 }
 
 export function alternativeTitles(novel: VisualNovelDetails): string[] {
