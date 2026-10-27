@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { CATALOG_PAGE_SIZE, fetchCatalogSelection, selectionFromQuery, selectionToQuery, type CatalogSelection } from '../modules/catalog/selection'
+import { CATALOG_PAGE_SIZE, fetchCatalogSelection, selectionFromQuery, selectionToQuery, selectionWithoutFilters, type CatalogSelection } from '../modules/catalog/selection'
+import { fetchTitleMatchCount, needsTitleMatchCount } from '../modules/catalog/emptySearch'
 import type { VisualNovelCard } from '../modules/vndb/types'
 import NovelCard from '../ui/NovelCard.vue'
 import LanguageFilter from '../ui/LanguageFilter.vue'
@@ -19,6 +20,7 @@ function applyFilters() { void navigate({ ...applied.value, language: draftLangu
 const novels = ref<VisualNovelCard[]>([])
 const loading = ref(true)
 const error = ref('')
+const titleMatchCount = ref<number | undefined>()
 const count = ref<number | undefined>()
 const more = ref(false)
 const grid = ref<HTMLElement>()
@@ -44,12 +46,18 @@ async function load() {
   const scroll = Number(window.history.state?.catalogScroll ?? 0)
   loading.value = true
   error.value = ''
+  titleMatchCount.value = undefined
   try {
     const response = await fetchCatalogSelection(selection, { signal: controller.signal })
     if (request !== generation) return
     novels.value = response.results
     count.value = response.count
     more.value = response.more
+    if (!response.results.length && needsTitleMatchCount(selection)) {
+      const matches = await fetchTitleMatchCount(selection.search, { signal: controller.signal })
+      if (request !== generation) return
+      titleMatchCount.value = matches
+    }
   } catch (reason) {
     if (request !== generation || (reason instanceof DOMException && reason.name === 'AbortError')) return
     error.value = reason instanceof Error ? reason.message : 'Stories could not be loaded. Please try again.'
@@ -80,6 +88,7 @@ onBeforeUnmount(() => { rememberScroll(); generation++; controller?.abort() })
         <div ref="grid" class="catalog-results" role="region" aria-label="Catalog results" tabindex="0" :aria-busy="loading" @scroll.passive="rememberScroll">
           <div v-if="loading" class="feed-message" role="status"><span class="message-symbol" aria-hidden="true">✳</span><h2>Opening a new chapter…</h2><p>Getting stories from VNDB.</p></div>
           <div v-else-if="error" class="feed-message feed-message--error" role="alert"><span class="message-symbol" aria-hidden="true">↺</span><h2>A little plot twist.</h2><p>{{ error }}</p><button class="button button--lime" @click="load">Try again <span aria-hidden="true">↗</span></button></div>
+          <div v-else-if="!novels.length && titleMatchCount" class="feed-message"><span class="message-symbol" aria-hidden="true">○</span><h2>{{ titleMatchCount.toLocaleString('en') }} {{ titleMatchCount === 1 ? 'match hidden' : 'matches hidden' }} by filters.</h2><p>Your title search has matches in VNDB. Show them with all filters cleared.</p><button class="button button--lime" @click="navigate(selectionWithoutFilters(applied))">Show without filters</button></div>
           <div v-else-if="!novels.length" class="feed-message"><span class="message-symbol" aria-hidden="true">○</span><h2>No stories here yet.</h2><p>VNDB returned no matching stories. Try another title.</p></div>
           <div v-else class="novel-grid"><NovelCard v-for="(novel, index) in novels" :key="novel.id" :novel="novel" :index="index" /></div>
         </div>

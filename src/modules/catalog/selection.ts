@@ -20,6 +20,9 @@ export function selectionFromQuery(query: LocationQuery): CatalogSelection {
 export function selectionToQuery(selection: CatalogSelection): LocationQueryRaw {
   return { ...(selection.search ? { q: selection.search } : {}), ...(selection.language !== 'all' ? { language: selection.language } : {}), ...(selection.sort !== 'rating' ? { sort: selection.sort } : {}), ...(selection.page > 1 ? { page: String(selection.page) } : {}) }
 }
+export function selectionWithoutFilters(selection: CatalogSelection): CatalogSelection {
+  return selectionFromQuery({ q: selection.search, sort: selection.sort })
+}
 export function compileCatalogQuery(selection: CatalogSelection): VndbQuery {
   const conditions: unknown[][] = []
   if (selection.search) conditions.push(['search', '=', selection.search])
