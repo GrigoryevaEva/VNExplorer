@@ -5,6 +5,7 @@ import { CATALOG_PAGE_SIZE, fetchCatalogSelection, selectionFromQuery, selection
 import { fetchTitleMatchCount, needsTitleMatchCount } from '../modules/catalog/emptySearch'
 import type { VisualNovelCard } from '../modules/vndb/types'
 import NovelCard from '../ui/NovelCard.vue'
+import CacheNotice from '../ui/CacheNotice.vue'
 import LanguageFilter from '../ui/LanguageFilter.vue'
 import TagPicker from '../ui/TagPicker.vue'
 import { loadTagDirectory } from '../modules/tags/directory'
@@ -36,6 +37,7 @@ function applyFilters() { void navigate({ ...applied.value, language: draftLangu
 const novels = ref<VisualNovelCard[]>([])
 const loading = ref(true)
 const error = ref('')
+const stale = ref(false)
 const titleMatchCount = ref<number | undefined>()
 const count = ref<number | undefined>()
 const more = ref(false)
@@ -62,15 +64,16 @@ async function load() {
   const scroll = Number(window.history.state?.catalogScroll ?? 0)
   loading.value = true
   error.value = ''
+  stale.value = false
   titleMatchCount.value = undefined
   try {
-    const response = await fetchCatalogSelection(selection, { signal: controller.signal })
+    const response = await fetchCatalogSelection(selection, { signal: controller.signal, onStale: () => { if (request === generation) stale.value = true } })
     if (request !== generation) return
     novels.value = response.results
     count.value = response.count
     more.value = response.more
     if (!response.results.length && needsTitleMatchCount(selection)) {
-      const matches = await fetchTitleMatchCount(selection.search, { signal: controller.signal })
+      const matches = await fetchTitleMatchCount(selection.search, { signal: controller.signal, onStale: () => { if (request === generation) stale.value = true } })
       if (request !== generation) return
       titleMatchCount.value = matches
     }
@@ -105,6 +108,7 @@ onBeforeUnmount(() => { rememberScroll(); generation++; controller?.abort() })
           <button class="button mobile-filters" @click="openFilters">Filters</button>
         </div>
         <div ref="grid" class="catalog-results" role="region" aria-label="Catalog results" tabindex="0" :aria-busy="loading" @scroll.passive="rememberScroll">
+          <CacheNotice v-if="stale && !loading" />
           <div v-if="loading" class="feed-message" role="status"><span class="message-symbol" aria-hidden="true">✳</span><h2>Opening a new chapter…</h2><p>Getting stories from VNDB.</p></div>
           <div v-else-if="error" class="feed-message feed-message--error" role="alert"><span class="message-symbol" aria-hidden="true">↺</span><h2>A little plot twist.</h2><p>{{ error }}</p><button class="button button--lime" @click="load">Try again <span aria-hidden="true">↗</span></button></div>
           <div v-else-if="!novels.length && titleMatchCount" class="feed-message"><span class="message-symbol" aria-hidden="true">○</span><h2>{{ titleMatchCount.toLocaleString('en') }} {{ titleMatchCount === 1 ? 'match hidden' : 'matches hidden' }} by filters.</h2><p>Your title search has matches in VNDB. Show them with all filters cleared.</p><button class="button button--lime" @click="navigate(selectionWithoutFilters(applied))">Show without filters</button></div>

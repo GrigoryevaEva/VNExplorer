@@ -5,6 +5,7 @@ import { alternativeTitles, fetchNovelDetails, formatPlayTime, spoilerFreeTags, 
 import { selectionFromQuery, selectionToQuery } from '../modules/catalog/selection'
 import { formatRating, formatReleaseDate } from '../modules/vndb/format'
 import CoverImage from '../ui/CoverImage.vue'
+import CacheNotice from '../ui/CacheNotice.vue'
 import SaveButton from '../ui/SaveButton.vue'
 import SourceDescription from '../ui/SourceDescription'
 import ScreenshotGallery from '../ui/ScreenshotGallery.vue'
@@ -19,6 +20,7 @@ function returnToCatalog(event: MouseEvent) {
 const novel = ref<VisualNovelDetails | null>(null)
 const loading = ref(false)
 const error = ref('')
+const stale = ref(false)
 const titles = computed(() => novel.value ? alternativeTitles(novel.value) : [])
 const tags = computed(() => novel.value ? spoilerFreeTags(novel.value) : [])
 let controller: AbortController | undefined
@@ -28,10 +30,11 @@ async function load() {
   controller = request
   novel.value = null
   error.value = ''
+  stale.value = false
   const id = String(route.params.id)
   if (!/^v[1-9]\d*$/.test(id)) { loading.value = false; return }
   loading.value = true
-  try { const result = await fetchNovelDetails(id, request.signal); if (!request.signal.aborted) novel.value = result }
+  try { const result = await fetchNovelDetails(id, request.signal, () => { if (!request.signal.aborted) stale.value = true }); if (!request.signal.aborted) novel.value = result }
   catch (reason) { if (!request.signal.aborted) error.value = reason instanceof Error ? reason.message : 'Please try again.' }
   finally { if (!request.signal.aborted) loading.value = false }
 }
@@ -42,6 +45,7 @@ onBeforeUnmount(() => controller?.abort())
 <template>
   <div class="detail-page">
     <RouterLink to="/" class="detail-back" @click="returnToCatalog">← Catalog</RouterLink>
+    <CacheNotice v-if="stale && !loading" />
     <div v-if="loading" class="feed-message" role="status"><span class="message-symbol" aria-hidden="true">✳</span><h1>Opening the story…</h1></div>
     <div v-else-if="error" class="feed-message feed-message--error" role="alert"><h1>Could not open this story</h1><p>{{ error }}</p><button class="button button--lime" @click="load">Try again ↗</button></div>
     <div v-else-if="!novel" class="feed-message"><h1>Story not found</h1><p>This visual novel is unavailable or its ID is unknown.</p><RouterLink to="/">Explore Catalog</RouterLink></div>

@@ -82,7 +82,7 @@ test('storage failure leaves Save truthful and does not lose an existing collect
   await expect(page.getByRole('heading', { name: 'Blue Story' })).toHaveCount(0)
 })
 
-test('Saved refreshes snapshots in a batch and keeps them readable when the API fails', async ({ page }) => {
+test('Saved refreshes snapshots in a batch and reuses fresh data during an outage', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Save Amber Story', exact: true }).click()
   await page.getByRole('button', { name: 'Save Blue Story', exact: true }).click()
@@ -95,11 +95,13 @@ test('Saved refreshes snapshots in a batch and keeps them readable when the API 
   await expect(page.locator('.novel-card__rating').filter({ hasText: '8.80' })).toHaveCount(2)
   expect(batches).toHaveLength(1)
   expect(batches[0].filters).toEqual(['or', ['id', '=', 'v1'], ['id', '=', 'v2']])
-  await page.route('https://api.vndb.org/kana/vn', route => route.fulfill({ status: 503, json: { error: 'outage' } }))
+  let failedRequests = 0
+  await page.route('https://api.vndb.org/kana/vn', route => { failedRequests++; return route.fulfill({ status: 503, json: { error: 'outage' } }) })
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Amber Story' })).toBeVisible()
   await expect(page.locator('.novel-card__rating').filter({ hasText: '8.80' })).toHaveCount(2)
-  await expect(page.getByText('Could not refresh from VNDB. Showing your last-known saved details.')).toBeVisible()
+  await expect(page.getByText('Showing saved details while checking VNDB…')).toHaveCount(0)
+  expect(failedRequests).toBe(0)
 })
 
 test('mobile Saved uses the shared cards and keeps all controls reachable', async ({ page }) => {

@@ -1,6 +1,6 @@
 import type { LocationQuery, LocationQueryRaw } from 'vue-router'
 import type { VndbQuery } from '../vndb/types'
-import { CARD_FIELDS, queryVndb } from '../vndb/client'
+import { CARD_FIELDS, queryVndb, type QueryOptions } from '../vndb/client'
 import type { VisualNovelCard } from '../vndb/types'
 
 export const CATALOG_PAGE_SIZE = 24
@@ -38,6 +38,6 @@ export function compileCatalogQuery(selection: CatalogSelection): VndbQuery {
   if (selection.language !== 'all') conditions.push(['release', '=', ['and', ['lang', '=', selection.language], ['released', '<=', 'today'], ['released', '!=', 'unknown']]])
   return { filters: conditions.length > 1 ? ['and', ...conditions] : conditions[0] ?? [], fields: CARD_FIELDS, sort: selection.sort, reverse: true, results: CATALOG_PAGE_SIZE, page: selection.page, count: true }
 }
-export function fetchCatalogSelection(selection: CatalogSelection, options: { signal?: AbortSignal } = {}) {
+export function fetchCatalogSelection(selection: CatalogSelection, options: QueryOptions = {}) {
   return queryVndb<VisualNovelCard>('vn', compileCatalogQuery(selection), options)
 }

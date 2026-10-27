@@ -2,10 +2,13 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { fetchReleaseDetails, fetchReleaseDirectory, isPlanned, languageName, newestReleases, platformName, releaseWebsites, type ReleaseAssignment, type ReleaseDetails } from '../modules/vndb/releases'
 import { formatReleaseDate } from '../modules/vndb/format'
+import CacheNotice from './CacheNotice.vue'
 const props = defineProps<{ novelId: string }>()
 const directory = ref<ReleaseAssignment[]>([])
 const manifestLoading = ref(true)
 const manifestError = ref('')
+const manifestStale = ref(false)
+const staleReleases = reactive(new Set<string>())
 const details = reactive(new Map<string, ReleaseDetails>())
 const expanded = reactive(new Set<string>())
 const loading = reactive(new Set<string>())
@@ -24,7 +27,8 @@ function message(reason: unknown) { return reason instanceof Error ? reason.mess
 async function loadDirectory() {
   manifestLoading.value = true
   manifestError.value = ''
-  try { directory.value = await fetchReleaseDirectory(props.novelId, controller.signal) }
+  manifestStale.value = false
+  try { directory.value = await fetchReleaseDirectory(props.novelId, controller.signal, () => { manifestStale.value = true }) }
   catch (reason) { if (!controller.signal.aborted) manifestError.value = message(reason) }
   finally { manifestLoading.value = false }
 }
@@ -39,7 +43,7 @@ function loadGroup(code: string, ids: string[]) {
       while (!controller.signal.aborted) {
         const batch = ids.filter(id => !details.has(id)).slice(0, 100)
         if (!batch.length) break
-        const result = await fetchReleaseDetails(batch, controller.signal)
+        const result = await fetchReleaseDetails(batch, controller.signal, () => { for (const id of batch) staleReleases.add(id) })
         for (const release of result) if (batch.includes(release.id)) details.set(release.id, release)
         if (batch.some(id => !details.has(id))) throw new Error('Some release details are unavailable. Please try again.')
       }
@@ -58,12 +62,14 @@ onBeforeUnmount(() => controller.abort())
 <template>
   <section class="releases" aria-labelledby="releases-heading">
     <h2 id="releases-heading">Releases</h2>
+    <CacheNotice v-if="manifestStale && !manifestLoading" />
     <p v-if="manifestLoading" role="status">Finding release languages…</p>
     <div v-else-if="manifestError" role="alert"><p>Could not load release languages. {{ manifestError }}</p><button class="button" @click="loadDirectory">Retry release directory</button></div>
     <p v-else-if="!groups.length" class="muted">No releases listed.</p>
     <div v-for="group in groups" :key="group.code" class="release-group">
       <h3><button :id="`release-language-${group.code}`" class="group-toggle" :aria-expanded="expanded.has(group.code)" :aria-controls="`release-group-${group.code}`" @click="toggle(group.code, group.ids)">{{ group.name }} · {{ group.ids.length }} {{ group.ids.length === 1 ? 'release' : 'releases' }}<span aria-hidden="true">{{ expanded.has(group.code) ? '−' : '+' }}</span></button></h3>
       <div v-if="expanded.has(group.code)" :id="`release-group-${group.code}`" role="region" :aria-label="`${group.name} releases`" class="group-content">
+        <CacheNotice v-if="group.ids.some(id => staleReleases.has(id))" />
         <p v-if="loading.has(group.code)" role="status">Loading releases: {{ loaded(group.ids) }} / {{ group.ids.length }}</p>
         <div v-if="errors.has(group.code)" role="alert"><p>Could not load {{ group.name }} releases. {{ errors.get(group.code) }} Loaded {{ loaded(group.ids) }} / {{ group.ids.length }}.</p><button class="button" @click="loadGroup(group.code, group.ids)">Retry {{ group.name }} releases</button></div>
         <ul class="release-list">

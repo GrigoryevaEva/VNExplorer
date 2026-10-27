@@ -16,6 +16,8 @@ export interface VndbResponse<T> {
   results: T[]
   more: boolean
   count?: number
+  stale?: boolean
+  fetchedAt?: number
 }
 
 export interface VndbQuery {

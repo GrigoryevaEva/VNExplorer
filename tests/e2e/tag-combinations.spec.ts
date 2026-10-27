@@ -52,10 +52,12 @@ test('included combinations use strict all or any, and always exclude unwanted t
   await page.getByRole('button', { name: 'Remove included tag Romance' }).click()
   await page.getByRole('button', { name: 'Apply filters' }).click()
   await expect.poll(() => requests.at(-1).filters).toEqual(['tag', '!=', ['g3', 0, 0]])
+  const beforeClear = requests.length
   await page.getByRole('button', { name: 'Remove excluded tag Violence' }).click()
   await page.getByRole('button', { name: 'Apply filters' }).click()
   await expect(page.getByRole('heading', { name: 'Violent fantasy romance' })).toBeVisible()
-  expect(requests.at(-1).filters).toEqual([])
+  expect(requests).toHaveLength(beforeClear)
+  await expect(page).not.toHaveURL(/[?&](tag|exclude)=/)
 })
 
 test('opposite actions replace and toggle while sort, page, and title submission preserve pending filters', async ({ page }) => {

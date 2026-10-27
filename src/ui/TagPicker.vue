@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import SourceDescription from './SourceDescription'
+import CacheNotice from './CacheNotice.vue'
 import { loadTagDirectory, tagSections, type DirectoryTag } from '../modules/tags/directory'
 const props = defineProps<{ included: string[]; excluded: string[] }>()
 const emit = defineEmits<{ select: [id: string, action: 'include' | 'exclude']; done: [] }>()
@@ -12,6 +13,7 @@ const about = ref('')
 const loading = ref(true)
 const loaded = ref(0)
 const error = ref('')
+const stale = ref(false)
 const shown = computed(() => {
   const term = search.value.trim().toLocaleLowerCase('en')
   const ids = tagSections.find(item => item.name === section.value)?.ids
@@ -19,7 +21,8 @@ const shown = computed(() => {
 })
 async function load() {
   loading.value = true; error.value = ''
-  try { tags.value = await loadTagDirectory(count => { loaded.value = count }) }
+  stale.value = false
+  try { tags.value = await loadTagDirectory(count => { loaded.value = count }, () => { stale.value = true }) }
   catch { error.value = 'Tags could not be loaded. Please try again.' }
   finally { loading.value = false }
 }
@@ -33,6 +36,7 @@ onMounted(() => { dialog.value?.showModal(); void load() })
     <p v-if="loading" role="status">Loading tags… {{ loaded.toLocaleString('en') }} ready</p>
     <div v-else-if="error" role="alert"><p>{{ error }}</p><button class="button button--lime" @click="load">Retry tags</button></div>
     <div v-else class="tag-results" role="region" aria-label="Tag directory" tabindex="0">
+      <CacheNotice v-if="stale" />
       <p class="tag-count">{{ shown.length }} tags{{ search.trim() ? ' across all sections' : '' }}</p>
       <ul><li v-for="tag in shown" :key="tag.id"><div class="tag-row"><strong>{{ tag.name }}</strong><button class="tag-info" :aria-label="`About ${tag.name}`" :aria-expanded="about === tag.id" :aria-controls="`description-${tag.id}`" @click="about = about === tag.id ? '' : tag.id">Info</button><button class="tag-include" :aria-label="`Include ${tag.name}`" :aria-pressed="props.included.includes(tag.id)" @click="emit('select', tag.id, 'include')">+ Include</button><button class="tag-exclude" :aria-label="`Exclude ${tag.name}`" :aria-pressed="props.excluded.includes(tag.id)" @click="emit('select', tag.id, 'exclude')">− Exclude</button></div><SourceDescription v-if="about === tag.id" :id="`description-${tag.id}`" class="tag-description" :text="tag.description || 'No description available.'" /></li></ul>
       <p v-if="!shown.length">No tags found. Try searching all tags.</p>
