@@ -4,4 +4,9 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  server: {
+    host: true,
+    port: 5173,
+    watch: { ignored: ['**/.worktrees/**'] },
+  },
 })
