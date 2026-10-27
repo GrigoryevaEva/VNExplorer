@@ -20,7 +20,8 @@ jobs:
             npx playwright install --with-deps chromium
             npm run test:e2e
           fi
-      - run: npm run build
+      - name: Build and production route smoke
+        run: npm run test:static
       - name: Assemble release
         run: |
           node scripts/release-notes.mjs "$GITHUB_REF_NAME" > release-notes.md

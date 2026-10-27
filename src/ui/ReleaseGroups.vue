@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
-import { fetchReleaseDetails, fetchReleaseDirectory, isPlanned, languageName, newestReleases, platformName, releaseWebsites, type ReleaseAssignment, type ReleaseDetails } from '../modules/vndb/releases'
+import { fetchReleaseDetails, fetchReleaseDirectory, isPlanned, languageName, newestReleases, platformName, releaseEditionLabels, releaseWebsites, type ReleaseAssignment, type ReleaseDetails } from '../modules/vndb/releases'
 import { formatReleaseDate } from '../modules/vndb/format'
 import CacheNotice from './CacheNotice.vue'
 const props = defineProps<{ novelId: string }>()
@@ -80,6 +80,7 @@ onBeforeUnmount(() => controller.abort())
               <a v-if="releaseWebsites(release).length === 1" :href="releaseWebsites(release)[0]!.url" target="_blank" rel="noopener noreferrer">{{ release.title }} ↗</a>
               <details v-else-if="releaseWebsites(release).length > 1" class="website-menu"><summary>{{ release.title }} ↗</summary><div><p v-for="link in releaseWebsites(release)" :key="link.url"><a :href="link.url" target="_blank" rel="noopener noreferrer">{{ link.label }} · {{ link.url }}</a></p></div></details>
               <span v-else>{{ release.title }}</span>
+              <div v-if="releaseEditionLabels(release, novelId, group.code).length" class="edition-labels"><span v-for="label in releaseEditionLabels(release, novelId, group.code)" :key="label">{{ label }}</span></div>
             </div>
             <span class="release-platforms"><span v-for="platform in release.platforms" :key="platform" class="platform">{{ platformName(platform) }}</span></span>
             <span class="release-status">{{ release.official ? 'Official' : 'Unofficial' }}</span>
@@ -100,6 +101,7 @@ h3 { margin: 0; }
 .release-list { list-style: none; padding: 0; margin: 0; }
 .release-row { display: grid; grid-template-columns: 130px 88px minmax(0, 1fr) 125px 80px; gap: 12px; padding: 17px 0; align-items: center; border-top: 1px dashed var(--line); font-size: 12px; line-height: 1.6; }
 .release-title { font-size: 14px; overflow-wrap: anywhere; }
+.edition-labels { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; color: var(--muted); font-size: 11px; }
 a { color: var(--mint); }
 .release-age, .release-date, .release-platforms, .release-status, .muted { color: var(--muted); }
 .planned { display: block; color: var(--lime); font-size: 10px; text-transform: uppercase; }

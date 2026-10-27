@@ -12,7 +12,9 @@
     "version:release": "node scripts/changesets.mjs version && npm install --package-lock-only",
     "release:tag": "node scripts/tag-release.mjs",
     "test:e2e": "playwright test",
-    "test:live": "node scripts/smoke-vndb.mjs"
+    "test:live": "node scripts/smoke-vndb.mjs",
+    "test:static": "npm run build && node scripts/smoke-static.mjs",
+    "test:handoff-live": "node scripts/smoke-handoff-live.mjs"
   },
   "dependencies": {
     "vue": "^3.5.44",

@@ -18,5 +18,5 @@ const choices = [{ value: 'all', label: 'All' }, { value: 'ru', label: 'Russian'
 legend { font-weight: 700; margin-bottom: 12px; }
 label { display: flex; align-items: center; gap: 9px; padding: 9px 0; cursor: pointer; }
 input { accent-color: var(--lime); width: 18px; height: 18px; }
-p { color: var(--muted); font-size: 12px; line-height: 1.5; }
+p { color: #425345; font-size: 12px; line-height: 1.5; }
 </style>

@@ -10,6 +10,9 @@ export interface ReleaseDetails {
   official: boolean
   platforms: string[]
   extlinks: { name: string; label: string; url: string }[]
+  patch: boolean
+  languages: { lang: string; mtl: boolean }[]
+  vns: { id: string; rtype: 'trial' | 'partial' | 'complete' }[]
 }
 
 export async function fetchReleaseDirectory(id: string, signal?: AbortSignal, onStale?: () => void): Promise<ReleaseAssignment[]> {
@@ -21,7 +24,7 @@ export async function fetchReleaseDirectory(id: string, signal?: AbortSignal, on
   }
 }
 
-const RELEASE_FIELDS = 'title,released,minage,official,platforms,extlinks{url,label,name}'
+const RELEASE_FIELDS = 'title,released,minage,official,platforms,extlinks{url,label,name},patch,languages{lang,mtl},vns{id,rtype}'
 export async function fetchReleaseDetails(ids: string[], signal?: AbortSignal, onStale?: () => void) {
   signal?.throwIfAborted()
   const key = (id: string) => queryKey('release-record', { filters: ['id', '=', id], fields: RELEASE_FIELDS })
@@ -51,6 +54,15 @@ export function releaseWebsites(release: ReleaseDetails) {
     if (link.name !== 'website' || links.findIndex(other => other.url === link.url) !== index) return false
     try { return ['http:', 'https:'].includes(new URL(link.url).protocol) } catch { return false }
   })
+}
+
+export function releaseEditionLabels(release: ReleaseDetails, novelId: string, language: string): string[] {
+  const kind = release.vns?.find(novel => novel.id === novelId)?.rtype
+  return [
+    ...(kind === 'trial' ? ['Demo'] : kind === 'partial' ? ['Partial'] : []),
+    ...(release.patch ? ['Patch'] : []),
+    ...(release.languages?.some(entry => entry.lang === language && entry.mtl) ? ['Machine translation'] : []),
+  ]
 }
 
 function dateKey(value: string | null): string {

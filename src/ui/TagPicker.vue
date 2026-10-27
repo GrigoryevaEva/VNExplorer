@@ -67,4 +67,10 @@ strong { flex: 1; font-size: 14px; overflow-wrap: anywhere; }
 .tag-include[aria-pressed=true] { background: var(--lime); color: var(--bg); }
 .tag-description { color: var(--muted); white-space: pre-line; font-size: 13px; line-height: 1.6; padding: 12px 0; overflow-wrap: anywhere; }
 @media(max-width: 760px) { .tag-picker { width: calc(100vw - 16px); height: calc(100dvh - 16px); max-height: none; max-width: none; padding: 16px; } .tag-picker[open] { gap: 14px; } h2 { font-size: 30px; } nav button { padding: 10px; font-size: 11px; } .tag-row { gap: 5px; } strong { font-size: 12px; } }
+@media(max-height: 600px) {
+  .tag-picker { overflow: auto; }
+  .tag-picker[open] { display: block; }
+  .tag-picker > * + * { margin-top: 18px; }
+  .tag-results { overflow: visible; }
+}
 </style>
