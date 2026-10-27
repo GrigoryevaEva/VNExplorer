@@ -2,10 +2,13 @@ import { expect, test } from '@playwright/test'
 
 test('complete tag directory supports curated sections and local global search', async ({ page }) => {
   const tagPages: number[] = []
+  let finishSecond!: () => void
+  const secondGate = new Promise<void>(resolve => { finishSecond = resolve })
   let catalogRequests = 0
   await page.route('https://api.vndb.org/kana/vn', route => { catalogRequests++; return route.fulfill({ json: { results: [], more: false, count: 0 } }) })
-  await page.route('https://api.vndb.org/kana/tag', route => {
+  await page.route('https://api.vndb.org/kana/tag', async route => {
     const query = route.request().postDataJSON(); tagPages.push(query.page)
+    if (query.page === 2) await secondGate
     return route.fulfill({ json: { results: query.page === 1 ? [
       { id: 'g96', name: 'Romance', description: '[b]Love[/b] between characters.', searchable: true },
       { id: 'g2', name: 'Fantasy', description: 'Imaginary worlds.', searchable: true },
@@ -18,6 +21,8 @@ test('complete tag directory supports curated sections and local global search',
   await page.goto('/')
   await page.getByRole('button', { name: 'Browse tags' }).click()
   const picker = page.getByRole('dialog', { name: 'Discover tags' })
+  await expect(picker.getByRole('status')).toHaveText('Loading tags… 2 ready')
+  finishSecond()
   await expect(picker.getByRole('button', { name: 'Include Fantasy', exact: true })).toBeVisible()
   expect(tagPages).toEqual([1, 2])
   await expect(picker.getByRole('listitem')).toHaveText(['FantasyInfoInclude', 'RomanceInfoInclude'])
@@ -73,7 +78,7 @@ test.describe('touch access', () => {
   await page.setViewportSize({ width: 360, height: 740 })
   let attempts = 0
   await page.route('https://api.vndb.org/kana/vn', route => route.fulfill({ json: { results: [], more: false, count: 0 } }))
-  await page.route('https://api.vndb.org/kana/tag', route => {
+  await page.route('https://api.vndb.org/kana/tag', async route => {
     attempts++
     return attempts === 1 ? route.fulfill({ status: 503, json: {} }) : route.fulfill({ json: { results: [{ id: 'g96', name: 'Romance', description: '[b]Love[/b] between characters.', searchable: true }], more: false } })
   })
@@ -96,5 +101,3 @@ test.describe('touch access', () => {
 })
 
 })
-
-
