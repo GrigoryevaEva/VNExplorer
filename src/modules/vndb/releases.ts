@@ -40,8 +40,8 @@ export async function fetchReleaseDetails(ids: string[], signal?: AbortSignal, o
     return [...rows, ...releases]
   } catch (error) {
     const older = cached.filter(record => !freshIds.has(record.id)).flatMap(record => record.response?.data.results as ReleaseDetails[] ?? [])
-    if (!isTemporaryVndbError(error) || !older.length) throw error
-    onStale?.()
+    if (!isTemporaryVndbError(error) || !older.length && !rows.length) throw error
+    if (older.length) onStale?.()
     return [...rows, ...older]
   }
 }
