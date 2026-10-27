@@ -295,3 +295,31 @@ test('a cache write failure does not hide a successful response or a saved colle
   expect(requests).toBe(2)
   await expect(page.getByRole('alert')).toHaveCount(0)
 })
+
+test('a failed uncached release preserves fresh shared records and retries only missing rows', async ({ page }) => {
+  let fail = true
+  const batches: string[][] = []
+  await page.route('https://api.vndb.org/kana/vn', route => route.fulfill({ json: { results: [{ ...novel, screenshots: [] }], more: false } }))
+  await page.route('https://api.vndb.org/kana/release', route => {
+    const body = route.request().postDataJSON()
+    if (!body.fields.includes('title')) return route.fulfill({ json: { results: [
+      { id: 'r1', languages: [{ lang: 'en' }, { lang: 'ru' }] }, { id: 'r2', languages: [{ lang: 'en' }] },
+    ], more: false } })
+    const ids: string[] = body.filters[0] === 'id' ? [body.filters[2]] : body.filters.slice(1).map((filter: string[]) => filter[2])
+    batches.push(ids)
+    if (ids.includes('r2') && fail) { fail = false; return route.fulfill({ status: 503, json: {} }) }
+    return route.fulfill({ json: { results: ids.map(id => ({ id, title: `Edition ${id}`, released: '2020', minage: null, official: false, platforms: [], extlinks: [] })), more: false } })
+  })
+  await page.goto('/vn/v1')
+  await page.getByRole('button', { name: 'Russian · 1 release' }).click()
+  await expect(page.getByText('Edition r1', { exact: true })).toBeVisible()
+  await page.reload()
+  await page.getByRole('button', { name: 'English · 2 releases' }).click()
+  const group = page.getByRole('region', { name: 'English releases' })
+  await expect(group.getByRole('alert')).toContainText('Loaded 1 / 2')
+  await expect(group.getByText('Edition r1', { exact: true })).toBeVisible()
+  await expect(group.getByText('Showing older cached data. VNDB could not be reached.')).toHaveCount(0)
+  await group.getByRole('button', { name: 'Retry English releases' }).click()
+  await expect(group.getByText('Edition r2', { exact: true })).toBeVisible()
+  expect(batches).toEqual([['r1'], ['r2'], ['r2']])
+})
