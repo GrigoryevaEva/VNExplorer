@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
 import { mkdtemp, readFile, rm, stat, mkdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { resolve, relative, extname, join, isAbsolute, sep } from 'node:path'
+import { resolve, relative, extname, join, isAbsolute, sep, basename, dirname } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { chromium, expect } from '@playwright/test'
 
@@ -122,4 +122,11 @@ try {
       console.log(JSON.stringify({ base, directDetailRefresh: true, directSavedRefresh: true, fullJourney: true, catalogHistory: true, assetResponses: assets.length, pageErrors: errors.length }))
     } finally { await context.close(); await new Promise(resolve => server.close(resolve)) }
   }
-} finally { await browser?.close(); await rm(scratch, { recursive: true, force: true }) }
+} finally {
+  await browser?.close()
+  const temporaryRoot = resolve(tmpdir())
+  const cleanupTarget = resolve(scratch)
+  const temporaryChild = relative(temporaryRoot, cleanupTarget)
+  assert(dirname(cleanupTarget) === temporaryRoot && !isAbsolute(temporaryChild) && temporaryChild === basename(cleanupTarget) && temporaryChild.startsWith('vndb-static-smoke-'), 'Cleanup target must be a direct smoke directory inside the system temporary directory')
+  await rm(cleanupTarget, { recursive: true, force: true })
+}
