@@ -1,4 +1,4 @@
-import type { VisualNovelCard, VndbQuery, VndbResponse } from './types'
+import type { VndbQuery, VndbResponse } from './types'
 import { cacheLifetime, queryKey, readResponse, writeResponse } from './cache'
 
 export const VNDB_API = 'https://api.vndb.org/kana'
@@ -82,8 +82,4 @@ async function requestVndb<T>(endpoint: string, query: VndbQuery, signal?: Abort
   if (!data || typeof data !== 'object' || !('results' in data) || !Array.isArray(data.results)) throw new VndbError('VNDB returned an unexpected response. Please try again.')
   if (query.count && query.results === 0 && (!('count' in data) || !Number.isSafeInteger(data.count) || Number(data.count) < 0)) throw new VndbError('VNDB returned an unexpected match count. Please try again.')
   return { ...data, stale: false } as VndbResponse<T>
-}
-
-export function fetchCatalog(options: QueryOptions = {}) {
-  return queryVndb<VisualNovelCard>('vn', { filters: [], fields: CARD_FIELDS, sort: 'rating', reverse: true, results: 24, page: 1, count: true }, options)
 }

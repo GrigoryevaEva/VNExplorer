@@ -48,13 +48,19 @@ function inline(source: string, depth = 0): VNodeChild[] {
 }
 
 function plain(source: string): VNodeChild[] {
-  return source.split(/(https?:\/\/[^\s<>\[\]]+)/g).map(part => {
+  return source.split(/(https?:\/\/[^\s<>\[\]]+)/g).flatMap(part => {
     const href = /^https?:\/\//.test(part) ? safeUrl(part) : null
-    return href ? h('a', { href, rel: 'noopener noreferrer' }, part) : part
+    if (href) return [h('a', { href, rel: 'noopener noreferrer' }, part)]
+    // Paragraph presentation belongs to text nodes after paired formatting has
+    // been recognized. A break inside bold/link/spoiler content must not split
+    // its source delimiters or reveal the contents of a closed disclosure.
+    return part.split(/(\n\s*\n)/).map((text, index) => index % 2
+      ? h('span', { class: 'source-paragraph-break', 'aria-hidden': 'true' })
+      : h('span', text))
   })
 }
 
 export default defineComponent({
   props: { text: { type: String, required: true } },
-  setup: props => () => h('div', { class: 'source-description' }, props.text.split(/\n\s*\n/).map(paragraph => h('div', { class: 'source-paragraph' }, inline(paragraph)))),
+  setup: props => () => h('div', { class: 'source-description' }, inline(props.text)),
 })

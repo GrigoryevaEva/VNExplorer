@@ -29,6 +29,31 @@ test('direct URL preserves source formatting and rejects executable source marku
   expect(await page.evaluate(() => 'injected' in window)).toBe(false)
 })
 
+test('formatting spans paragraphs while source spoilers stay hidden until disclosure', async ({ page }) => {
+  const description = 'Opening paragraph.\n\n[spoiler]First secret paragraph.\n\nSecond secret paragraph with [b]hidden emphasis[/b].[/spoiler]\n\n[b]Bold first paragraph.\n\nBold second with [i]italic [url=https://example.org/nested]nested source[/url][/i].[/b]\n\n[quote]A later quote.\n\nAnother quoted paragraph.[/quote]\n\n[raw][b]raw stays literal[/b]\n\n[url=javascript:alert(1)]raw link[/url][/raw]\n\n[code][b]code stays literal[/b]\n\nline two[/code]'
+  await page.route('https://api.vndb.org/kana/vn', route => route.fulfill({ json: { results: [{ ...novel, description }], more: false } }))
+  await page.route('https://api.vndb.org/kana/release', route => route.fulfill({ json: { results: [], more: false } }))
+  await page.goto('/vn/v17')
+  const source = page.getByRole('region', { name: 'The story', exact: true })
+  await expect(source.getByText('First secret paragraph.', { exact: false })).not.toBeVisible()
+  await expect(source.getByText('Second secret paragraph with', { exact: false })).not.toBeVisible()
+  const bold = source.locator('strong').filter({ hasText: 'Bold first paragraph.' })
+  await expect(bold).toContainText('Bold second with italic nested source.')
+  await expect(bold.locator('em').getByRole('link', { name: 'nested source', exact: true })).toHaveAttribute('href', 'https://example.org/nested')
+  await expect(source.getByRole('blockquote')).toContainText('A later quote.')
+  await expect(source.getByRole('blockquote')).toContainText('Another quoted paragraph.')
+  await expect(source.getByText('[b]raw stays literal[/b]', { exact: false })).toBeVisible()
+  await expect(source.locator('code')).toContainText('[b]code stays literal[/b]')
+  await expect(source.getByRole('link', { name: 'raw link', exact: true })).toHaveCount(0)
+  const opening = await source.getByText('Opening paragraph.', { exact: true }).boundingBox()
+  const formatted = await bold.boundingBox()
+  expect(formatted!.y).toBeGreaterThan(opening!.y + opening!.height)
+  await source.getByText('Source spoiler', { exact: true }).click()
+  await expect(source.getByText('First secret paragraph.', { exact: false })).toBeVisible()
+  await expect(source.getByText('Second secret paragraph with', { exact: false })).toBeVisible()
+  await expect(source.locator('strong').filter({ hasText: 'hidden emphasis' })).toBeVisible()
+})
+
 test('missing source data and coarse play time remain honest across direct routes', async ({ page }) => {
   await page.route('https://api.vndb.org/kana/vn', route => {
     const id = route.request().postDataJSON().filters[2]
