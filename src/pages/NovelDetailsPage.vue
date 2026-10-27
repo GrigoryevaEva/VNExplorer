@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { alternativeTitles, fetchNovelDetails, formatPlayTime, type VisualNovelDetails } from '../modules/vndb/details'
 import { formatRating, formatReleaseDate } from '../modules/vndb/format'
 import CoverImage from '../ui/CoverImage.vue'
+import SaveButton from '../ui/SaveButton.vue'
 import SourceDescription from '../ui/SourceDescription'
 import ScreenshotGallery from '../ui/ScreenshotGallery.vue'
 import ReleaseGroups from '../ui/ReleaseGroups.vue'
@@ -46,7 +47,7 @@ onBeforeUnmount(() => controller?.abort())
       <div class="detail-hero">
         <div class="detail-cover"><CoverImage :src="novel.image?.url" :title="novel.title" /></div>
         <div class="detail-introduction"><p class="eyebrow">A STORY TO GET LOST IN / {{ novel.id }}</p><h1>{{ novel.title }}</h1>
-          <dl class="detail-facts"><div><dt>Rating</dt><dd class="detail-rating">{{ formatRating(novel.rating) }}</dd><p>{{ novel.votecount == null ? 'Vote count unknown' : `${novel.votecount.toLocaleString('en')} votes` }}</p></div><div><dt>First release</dt><dd>{{ formatReleaseDate(novel.released) }}</dd></div><div><dt>Approximate play time</dt><dd>{{ formatPlayTime(novel) }}</dd></div></dl>
+          <dl class="detail-facts"><div><dt>Rating</dt><dd class="detail-rating">{{ formatRating(novel.rating) }}</dd><p>{{ novel.votecount == null ? 'Vote count unknown' : `${novel.votecount.toLocaleString('en')} votes` }}</p></div><div><dt>First release</dt><dd>{{ formatReleaseDate(novel.released) }}</dd></div><div><dt>Approximate play time</dt><dd>{{ formatPlayTime(novel) }}</dd></div></dl><SaveButton :novel="novel" />
         </div>
       </div>
       <section class="detail-section" aria-labelledby="description-heading"><h2 id="description-heading">The story</h2><SourceDescription v-if="novel.description" class="detail-description" :text="novel.description" /><p v-else class="detail-empty">No description available.</p></section>
@@ -76,6 +77,7 @@ onBeforeUnmount(() => controller?.abort())
 .detail-empty { color: var(--muted); line-height: 1.6; }
 @media(max-width: 760px) { .detail-page { padding: 24px 18px 60px; } .detail-hero { grid-template-columns: 1fr; gap: 28px; } .detail-cover { width: min(100%, 330px); margin: auto; } .detail-introduction h1 { font-size: 38px; } .detail-facts { gap: 20px; } }
 </style>
+
 
 
 
