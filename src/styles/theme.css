@@ -159,7 +159,7 @@ h1, h2, p { margin: 0; }
 @media(prefers-reduced-motion: reduce) {
   *, *:before, *:after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
-.source-paragraph + .source-paragraph { margin-top: 1.25em; }
+.source-paragraph-break { display: block; height: 1.25em; }
 .source-description a { color: var(--mint); text-underline-offset: 3px; }
 .source-description blockquote { border-left: 3px solid var(--mint); margin: 1em 0; padding-left: 18px; color: var(--muted); }
 .source-spoiler { border: 1px solid var(--line); padding: 10px 14px; }
