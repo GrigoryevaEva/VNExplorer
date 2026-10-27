@@ -25,7 +25,7 @@ test('complete tag directory supports curated sections and local global search',
   finishSecond()
   await expect(picker.getByRole('button', { name: 'Include Fantasy', exact: true })).toBeVisible()
   expect(tagPages).toEqual([1, 2])
-  await expect(picker.getByRole('listitem')).toHaveText(['FantasyInfoInclude', 'RomanceInfoInclude'])
+  await expect(picker.getByRole('listitem')).toHaveText(['FantasyInfo+ Include− Exclude', 'RomanceInfo+ Include− Exclude'])
   await picker.getByRole('button', { name: 'Sexual Content', exact: true }).click()
   await expect(picker.getByRole('button', { name: 'Include No Sexual Content', exact: true })).toBeVisible()
   await picker.getByRole('button', { name: 'All tags', exact: true }).click()

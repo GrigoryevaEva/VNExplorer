@@ -13,18 +13,26 @@ const route = useRoute()
 const router = useRouter()
 const applied = computed(() => selectionFromQuery(route.query))
 const draftSearch = ref(applied.value.search)
-const draftTag = ref(applied.value.includedTag)
+const draftIncluded = ref([...applied.value.includedTags])
+const draftExcluded = ref([...applied.value.excludedTags])
+const draftStrict = ref(applied.value.strictMatch)
+function selectTag(id: string, action: 'include' | 'exclude') {
+  const active = (action === 'include' ? draftIncluded : draftExcluded).value.includes(id)
+  draftIncluded.value = draftIncluded.value.filter(tag => tag !== id)
+  draftExcluded.value = draftExcluded.value.filter(tag => tag !== id)
+  if (!active) (action === 'include' ? draftIncluded : draftExcluded).value.push(id)
+}
 const tagNames = ref<Record<string, string>>({})
-const draftTagName = computed(() => tagNames.value[draftTag.value] ?? draftTag.value)
+const tagName = (id: string) => tagNames.value[id] ?? id
 async function readTagNames() { try { const tags = await loadTagDirectory(() => {}); tagNames.value = Object.fromEntries(tags.map(tag => [tag.id, tag.name])) } catch { /* The picker exposes retry if loading fails. */ } }
-watch(draftTag, tag => { if (tag) void readTagNames() }, { immediate: true })
+watch(() => [...draftIncluded.value, ...draftExcluded.value].join(), ids => { if (ids) void readTagNames() }, { immediate: true })
 const draftLanguage = ref(applied.value.language)
 const filterDialog = ref<HTMLDialogElement>()
 const filterPanel = ref<HTMLElement>()
 const mobileFiltersOpen = ref(false)
 function closeFilters() { filterDialog.value?.close(); mobileFiltersOpen.value = false }
 function openFilters() { mobileFiltersOpen.value = true; filterDialog.value?.showModal() }
-function applyFilters() { void navigate({ ...applied.value, language: draftLanguage.value, includedTag: draftTag.value, page: 1 }); closeFilters() }
+function applyFilters() { void navigate({ ...applied.value, language: draftLanguage.value, includedTags: [...draftIncluded.value], excludedTags: [...draftExcluded.value], strictMatch: draftStrict.value, page: 1 }); closeFilters() }
 const novels = ref<VisualNovelCard[]>([])
 const loading = ref(true)
 const error = ref('')
@@ -77,7 +85,9 @@ async function load() {
     }
   }
 }
-watch(() => applied.value.includedTag, tag => { draftTag.value = tag })
+watch(() => JSON.stringify([applied.value.includedTags, applied.value.excludedTags, applied.value.strictMatch]), () => {
+  draftIncluded.value = [...applied.value.includedTags]; draftExcluded.value = [...applied.value.excludedTags]; draftStrict.value = applied.value.strictMatch
+})
 watch(() => applied.value.search, search => { draftSearch.value = search })
 watch(() => applied.value.language, language => { draftLanguage.value = language })
 watch(() => route.fullPath, () => { void load() }, { immediate: true })
@@ -109,16 +119,16 @@ onBeforeUnmount(() => { rememberScroll(); generation++; controller?.abort() })
           <section class="selection-card filter-controls" aria-label="Catalog filters">
             <button v-if="mobileFiltersOpen" class="filter-close" aria-label="Close filters" @click="closeFilters">Close ×</button>
             <h2>Filters</h2>
-            <LanguageFilter v-model="draftLanguage" /><div class="tag-draft"><p class="eyebrow">INCLUDED TAG</p><button v-if="draftTag" class="tag-chip" :aria-label="`Remove included tag ${draftTagName}`" @click="draftTag = ''">{{ draftTagName }} ×</button><p v-else>Anything goes</p><button class="button tag-browse" @click="tagsOpen = true; readTagNames()">Browse tags</button></div>
+            <LanguageFilter v-model="draftLanguage" /><div class="tag-draft"><p class="eyebrow">INCLUDED TAGS</p><button v-for="id in draftIncluded" :key="id" class="tag-chip" :aria-label="`Remove included tag ${tagName(id)}`" @click="draftIncluded = draftIncluded.filter(tag => tag !== id)">+ {{ tagName(id) }} ×</button><p v-if="!draftIncluded.length">Anything goes</p><p class="eyebrow">EXCLUDED TAGS</p><button v-for="id in draftExcluded" :key="id" class="tag-chip" :aria-label="`Remove excluded tag ${tagName(id)}`" @click="draftExcluded = draftExcluded.filter(tag => tag !== id)">− {{ tagName(id) }} ×</button><p v-if="!draftExcluded.length">None</p><label class="strict-match"><input v-model="draftStrict" type="checkbox" /> Strict match</label><button class="button tag-browse" @click="tagsOpen = true; readTagNames()">Browse tags</button></div>
             <button class="button button--lime" @click="applyFilters">Apply filters</button>
           </section>
         </Teleport>
-        <section class="selection-card"><p class="eyebrow">YOUR SELECTION</p><h2>Good stories.<br />No limits.</h2><dl><div><dt>Language</dt><dd>{{ applied.language === 'ru' ? 'Russian' : applied.language === 'en' ? 'English' : 'All languages' }} <span aria-hidden="true">↗</span></dd></div><div><dt>Tags</dt><dd>{{ applied.includedTag ? tagNames[applied.includedTag] ?? applied.includedTag : 'Anything goes' }} <span aria-hidden="true">✳</span></dd></div><div><dt>Order</dt><dd>{{ applied.sort === 'rating' ? 'Highest rated first' : 'Newest first release' }} <span aria-hidden="true">★</span></dd></div></dl><div class="selection-card__note"><span aria-hidden="true">↳</span> Start with the stories readers love.</div></section>
+        <section class="selection-card"><p class="eyebrow">YOUR SELECTION</p><h2>Good stories.<br />No limits.</h2><dl><div><dt>Language</dt><dd>{{ applied.language === 'ru' ? 'Russian' : applied.language === 'en' ? 'English' : 'All languages' }} <span aria-hidden="true">↗</span></dd></div><div><dt>Tags</dt><dd>{{ [...applied.includedTags.map(id => '+ ' + tagName(id)), ...applied.excludedTags.map(id => '− ' + tagName(id))].join(', ') || 'Anything goes' }} <span aria-hidden="true">✳</span></dd></div><div><dt>Order</dt><dd>{{ applied.sort === 'rating' ? 'Highest rated first' : 'Newest first release' }} <span aria-hidden="true">★</span></dd></div></dl><div class="selection-card__note"><span aria-hidden="true">↳</span> Start with the stories readers love.</div></section>
         <div class="reading-card"><span class="reading-card__flower" aria-hidden="true">✳</span><p>Different worlds.<br /><strong>Same curiosity.</strong></p><span class="reading-card__bottom">GET LOST IN A GOOD ONE ↗</span></div>
         <p class="source-note">Stories & artwork from <a href="https://vndb.org" target="_blank" rel="noreferrer">VNDB ↗</a></p>
       </aside>
     </div>
-    <TagPicker v-if="tagsOpen" :selected="draftTag" @select="draftTag = $event" @done="tagsOpen = false" />
+    <TagPicker v-if="tagsOpen" :included="draftIncluded" :excluded="draftExcluded" @select="selectTag" @done="tagsOpen = false" />
     <dialog ref="filterDialog" class="filter-dialog" aria-label="Catalog filters" @cancel="mobileFiltersOpen = false" @click="event => { if (event.target === filterDialog) closeFilters() }"></dialog>
   </section>
 </template>

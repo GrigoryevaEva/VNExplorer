@@ -2,8 +2,8 @@
 import { computed, onMounted, ref } from 'vue'
 import SourceDescription from './SourceDescription'
 import { loadTagDirectory, tagSections, type DirectoryTag } from '../modules/tags/directory'
-const props = defineProps<{ selected: string }>()
-const emit = defineEmits<{ select: [id: string]; done: [] }>()
+const props = defineProps<{ included: string[]; excluded: string[] }>()
+const emit = defineEmits<{ select: [id: string, action: 'include' | 'exclude']; done: [] }>()
 const dialog = ref<HTMLDialogElement>()
 const tags = ref<DirectoryTag[]>([])
 const section = ref('Genres & Themes')
@@ -34,7 +34,7 @@ onMounted(() => { dialog.value?.showModal(); void load() })
     <div v-else-if="error" role="alert"><p>{{ error }}</p><button class="button button--lime" @click="load">Retry tags</button></div>
     <div v-else class="tag-results" role="region" aria-label="Tag directory" tabindex="0">
       <p class="tag-count">{{ shown.length }} tags{{ search.trim() ? ' across all sections' : '' }}</p>
-      <ul><li v-for="tag in shown" :key="tag.id"><div class="tag-row"><strong>{{ tag.name }}</strong><button class="tag-info" :aria-label="`About ${tag.name}`" :aria-expanded="about === tag.id" :aria-controls="`description-${tag.id}`" @click="about = about === tag.id ? '' : tag.id">Info</button><button class="tag-include" :aria-label="`Include ${tag.name}`" :aria-pressed="props.selected === tag.id" @click="emit('select', props.selected === tag.id ? '' : tag.id)">Include</button></div><SourceDescription v-if="about === tag.id" :id="`description-${tag.id}`" class="tag-description" :text="tag.description || 'No description available.'" /></li></ul>
+      <ul><li v-for="tag in shown" :key="tag.id"><div class="tag-row"><strong>{{ tag.name }}</strong><button class="tag-info" :aria-label="`About ${tag.name}`" :aria-expanded="about === tag.id" :aria-controls="`description-${tag.id}`" @click="about = about === tag.id ? '' : tag.id">Info</button><button class="tag-include" :aria-label="`Include ${tag.name}`" :aria-pressed="props.included.includes(tag.id)" @click="emit('select', tag.id, 'include')">+ Include</button><button class="tag-exclude" :aria-label="`Exclude ${tag.name}`" :aria-pressed="props.excluded.includes(tag.id)" @click="emit('select', tag.id, 'exclude')">− Exclude</button></div><SourceDescription v-if="about === tag.id" :id="`description-${tag.id}`" class="tag-description" :text="tag.description || 'No description available.'" /></li></ul>
       <p v-if="!shown.length">No tags found. Try searching all tags.</p>
     </div>
   </dialog>
@@ -58,8 +58,9 @@ li { border-top: 1px solid var(--line); padding: 10px 0; }
 strong { flex: 1; font-size: 14px; overflow-wrap: anywhere; }
 .tag-row button { min-height: 44px; padding: 10px; border-radius: 7px; background: var(--panel); color: var(--mint); }
 .tag-row .tag-include { border: 1px solid #66705c; color: var(--lime); }
+.tag-row .tag-exclude { border: 1px solid #b88799; color: var(--pink, #f4a9c0); }
+.tag-exclude[aria-pressed=true] { background: #78334b; color: white; }
 .tag-include[aria-pressed=true] { background: var(--lime); color: var(--bg); }
 .tag-description { color: var(--muted); white-space: pre-line; font-size: 13px; line-height: 1.6; padding: 12px 0; overflow-wrap: anywhere; }
 @media(max-width: 760px) { .tag-picker { width: calc(100vw - 16px); height: calc(100dvh - 16px); max-height: none; max-width: none; padding: 16px; } .tag-picker[open] { gap: 14px; } h2 { font-size: 30px; } nav button { padding: 10px; font-size: 11px; } .tag-row { gap: 5px; } strong { font-size: 12px; } }
 </style>
-
