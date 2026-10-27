@@ -6,17 +6,25 @@ import { fetchTitleMatchCount, needsTitleMatchCount } from '../modules/catalog/e
 import type { VisualNovelCard } from '../modules/vndb/types'
 import NovelCard from '../ui/NovelCard.vue'
 import LanguageFilter from '../ui/LanguageFilter.vue'
+import TagPicker from '../ui/TagPicker.vue'
+import { loadTagDirectory } from '../modules/tags/directory'
+const tagsOpen = ref(false)
 const route = useRoute()
 const router = useRouter()
 const applied = computed(() => selectionFromQuery(route.query))
 const draftSearch = ref(applied.value.search)
+const draftTag = ref(applied.value.includedTag)
+const tagNames = ref<Record<string, string>>({})
+const draftTagName = computed(() => tagNames.value[draftTag.value] ?? draftTag.value)
+async function readTagNames() { try { const tags = await loadTagDirectory(() => {}); tagNames.value = Object.fromEntries(tags.map(tag => [tag.id, tag.name])) } catch { /* The picker exposes retry if loading fails. */ } }
+watch(draftTag, tag => { if (tag) void readTagNames() }, { immediate: true })
 const draftLanguage = ref(applied.value.language)
 const filterDialog = ref<HTMLDialogElement>()
 const filterPanel = ref<HTMLElement>()
 const mobileFiltersOpen = ref(false)
 function closeFilters() { filterDialog.value?.close(); mobileFiltersOpen.value = false }
 function openFilters() { mobileFiltersOpen.value = true; filterDialog.value?.showModal() }
-function applyFilters() { void navigate({ ...applied.value, language: draftLanguage.value, page: 1 }); closeFilters() }
+function applyFilters() { void navigate({ ...applied.value, language: draftLanguage.value, includedTag: draftTag.value, page: 1 }); closeFilters() }
 const novels = ref<VisualNovelCard[]>([])
 const loading = ref(true)
 const error = ref('')
@@ -69,6 +77,7 @@ async function load() {
     }
   }
 }
+watch(() => applied.value.includedTag, tag => { draftTag.value = tag })
 watch(() => applied.value.search, search => { draftSearch.value = search })
 watch(() => applied.value.language, language => { draftLanguage.value = language })
 watch(() => route.fullPath, () => { void load() }, { immediate: true })
@@ -100,20 +109,24 @@ onBeforeUnmount(() => { rememberScroll(); generation++; controller?.abort() })
           <section class="selection-card filter-controls" aria-label="Catalog filters">
             <button v-if="mobileFiltersOpen" class="filter-close" aria-label="Close filters" @click="closeFilters">Close ×</button>
             <h2>Filters</h2>
-            <LanguageFilter v-model="draftLanguage" />
+            <LanguageFilter v-model="draftLanguage" /><div class="tag-draft"><p class="eyebrow">INCLUDED TAG</p><button v-if="draftTag" class="tag-chip" :aria-label="`Remove included tag ${draftTagName}`" @click="draftTag = ''">{{ draftTagName }} ×</button><p v-else>Anything goes</p><button class="button tag-browse" @click="tagsOpen = true; readTagNames()">Browse tags</button></div>
             <button class="button button--lime" @click="applyFilters">Apply filters</button>
           </section>
         </Teleport>
-        <section class="selection-card"><p class="eyebrow">YOUR SELECTION</p><h2>Good stories.<br />No limits.</h2><dl><div><dt>Language</dt><dd>{{ applied.language === 'ru' ? 'Russian' : applied.language === 'en' ? 'English' : 'All languages' }} <span aria-hidden="true">↗</span></dd></div><div><dt>Tags</dt><dd>Anything goes <span aria-hidden="true">✳</span></dd></div><div><dt>Order</dt><dd>{{ applied.sort === 'rating' ? 'Highest rated first' : 'Newest first release' }} <span aria-hidden="true">★</span></dd></div></dl><div class="selection-card__note"><span aria-hidden="true">↳</span> Start with the stories readers love.</div></section>
+        <section class="selection-card"><p class="eyebrow">YOUR SELECTION</p><h2>Good stories.<br />No limits.</h2><dl><div><dt>Language</dt><dd>{{ applied.language === 'ru' ? 'Russian' : applied.language === 'en' ? 'English' : 'All languages' }} <span aria-hidden="true">↗</span></dd></div><div><dt>Tags</dt><dd>{{ applied.includedTag ? tagNames[applied.includedTag] ?? applied.includedTag : 'Anything goes' }} <span aria-hidden="true">✳</span></dd></div><div><dt>Order</dt><dd>{{ applied.sort === 'rating' ? 'Highest rated first' : 'Newest first release' }} <span aria-hidden="true">★</span></dd></div></dl><div class="selection-card__note"><span aria-hidden="true">↳</span> Start with the stories readers love.</div></section>
         <div class="reading-card"><span class="reading-card__flower" aria-hidden="true">✳</span><p>Different worlds.<br /><strong>Same curiosity.</strong></p><span class="reading-card__bottom">GET LOST IN A GOOD ONE ↗</span></div>
         <p class="source-note">Stories & artwork from <a href="https://vndb.org" target="_blank" rel="noreferrer">VNDB ↗</a></p>
       </aside>
     </div>
+    <TagPicker v-if="tagsOpen" :selected="draftTag" @select="draftTag = $event" @done="tagsOpen = false" />
     <dialog ref="filterDialog" class="filter-dialog" aria-label="Catalog filters" @cancel="mobileFiltersOpen = false" @click="event => { if (event.target === filterDialog) closeFilters() }"></dialog>
   </section>
 </template>
 
 <style scoped>
+.tag-draft { margin: 20px 0; display: grid; gap: 10px; font-size: 12px; }
+.tag-chip { color: inherit; background: #ffffff55; border-radius: 8px; padding: 10px; overflow-wrap: anywhere; text-align: left; }
+.tag-browse { border: 1px solid #718775; color: inherit; background: transparent; justify-content: center; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .mobile-filters { display: none; }
 .filter-controls { margin-bottom: 18px; }
@@ -144,5 +157,3 @@ onBeforeUnmount(() => { rememberScroll(); generation++; controller?.abort() })
   .catalog-footer { flex-direction: column; justify-content: center; gap: 5px; }
 }
 </style>
-
-
