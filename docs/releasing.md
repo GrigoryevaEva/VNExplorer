@@ -1,38 +1,43 @@
-# Development and releases
+# Разработка и публикация релизов
 
-## Branches and notes
+## Этапы и ветки
 
-`dev` is the integration branch. Each task starts from current `dev` in a separate `task/<name>` branch, adds its own changeset, and merges back after checks pass. Merge current `dev` into the task branch before final validation. `main` is not updated automatically.
+Интеграционная ветка — `dev`; `main` автоматически не обновляется. До первого опубликованного релиза, включая текущий рефакторинг и его первую публикацию, рабочие ветки имеют вид `task/{name}` и начинаются от актуальной `dev`.
 
-Run `npm run changeset`, select `visual-novels` (despite the private package), choose patch/minor/major, and describe the user-visible result. Commit the generated note with the task. Check it with `npm run changeset:check -- origin/dev`. CI checks newly added notes, not older pending changesets.
+Первый релиз с рефакторингом — `1.0.0`, тег `v1.0.0`; это релиз v1 из обсуждения. Используется формат версий MAJOR.MINOR.PATCH. Сразу после его публикации крупные фичи выполняются в `feature/{name}`, баги — в `fix/{name}`. Для иных работ отдельный префикс не установлен.
 
-## Prepare a version
+Каждое изменение сопровождается Changeset. Команда `npm run changeset` позволяет выбрать пакет `visual-novels`, включая private-пакет, и подходящий bump. Проверка — `npm run changeset:check -- origin/dev`; CI проверяет новые заметки относительно базы изменений.
 
-Start a release branch such as `task/release-0-1-0` from current `dev`:
+## Управление тестированием
+
+До завершения текущего рефакторинга и публикации `1.0.0` пользователь разрешил писать, адаптировать и запускать тесты по каждой задаче без дополнительных вопросов. Это включает необходимые unit/component/E2E, статические smoke, ограниченные live-проверки и CI. По ходу работ сохранять охват поведения, перед публикацией выполнить общую регрессию и проверки production-сборки. Прежнее откладывание тестов до конца отменено.
+
+После первой публикации тесты пишутся и проверяются в конце ветки после подтверждения пользователя, что всё хорошо, ревью пройдено, и поручения на тестирование. До разрешения допустимы статические проверки и сборка, если команда не запускает тесты.
+
+Текущие workflows запускают браузерные тесты при push/PR и по релизному тегу. До первой публикации такой запуск разрешён. После неё учитывать косвенный запуск в установленном порядке тестирования ветки. Эта документация сама workflows не меняет и не разрешает публикацию без соответствующего поручения.
+
+## Подготовка версии
+
+Перед подготовкой первого релиза завершить рефакторинг, пользовательское ревью, проверки по задачам и финальную регрессию; дополнительное разрешение на эти тесты уже не требуется. Рабочее дерево должно быть чистым. Для первого релиза использовать `task/release-1-0-0`.
 
 ```sh
 npm ci
 npm run version:release
 npm run build
-npm run test:e2e
 ```
 
-Changesets consumes pending notes into the version and CHANGELOG; the script also refreshes the lockfile. Review and commit the result, then merge into `dev`. Version-preparation branches use the version/changelog changes instead of a new changeset describing consumption of old notes. The first compatible feature release is `0.1.0`; pending notes are not released features.
+Эти команды приводятся для будущей подготовки, а не разрешают выполнить её автоматически. Проверить package scripts на дополнительные эффекты перед запуском. Разрешённые тестовые команды выполнять отдельно.
 
-## Publish
+Changesets переносит накопленные заметки в версию и CHANGELOG; скрипт обновляет lockfile. Результат проверяется, коммитится и интегрируется в `dev`. Подготовка версии не требует нового Changeset о потреблении предыдущих заметок. Первая публикация должна быть ровно `1.0.0`: на этапе подготовки обеспечить соответствующий результат Changesets, не оставить автоматически полученную `0.1.0`. Проверить совпадение версии пакета, lockfile, заголовка CHANGELOG и тега `v1.0.0`. Накопленные заметки ещё не являются опубликованным релизом.
 
-From a clean, tested version commit:
+## Публикация
 
-```sh
-npm run release:tag
-git push origin dev
-git push origin v0.1.0
-```
+Публикация требует отдельного поручения владельца и завершённых разрешённых проверок. Механизм: `npm run release:tag`, отправка `dev`, затем отправка фактического созданного тега `vX.Y.Z`.
 
-Use the actual generated tag. A `vX.Y.Z` tag triggers the Release workflow, which checks the matching version, installs locked dependencies, runs available browser tests, builds, and creates a GitHub Release with CHANGELOG notes and a ZIP of the static site. No npm publication or server deployment occurs.
+Тег запускает Release workflow: проверка версии, установка locked-зависимостей, браузерные проверки, сборка, GitHub Release с заметками и ZIP статического сайта. Тесты первого релиза уже разрешены; для последующих публикаций учитывать политику веток. npm-публикации и автоматического размещения на сервере нет.
 
-GitHub Actions must be enabled. The job uses its scoped `GITHUB_TOKEN` with contents write permission; no personal token is stored. The archive uses the configured Vite base. Rebuild for a different subdirectory base before deploying there.
+GitHub Actions должен быть включён; workflow использует scoped GITHUB_TOKEN с contents write. Архив учитывает Vite base. Для другого подкаталога нужна отдельная сборка с нужным base.
 
-## Local material
+## Локальные материалы
 
-Agent instructions, specs/tasks, glossary, internal design docs, worktrees and test artifacts are ignored. README, release documentation, changesets, CHANGELOG, source, tests and workflows remain tracked. Do not ignore all Markdown files.
+Инструкции агентов, спецификации, архив исходных проектных описаний, глоссарий, worktrees и артефакты остаются локальными. README, руководство релиза, Changesets, CHANGELOG, исходники, тесты и workflows отслеживаются. Не игнорировать все Markdown-файлы.
