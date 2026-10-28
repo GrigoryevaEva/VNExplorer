@@ -1,0 +1,2 @@
+export const SAVED_CARD_BATCH_SIZE = 50;
+export const SAVED_CARD_RESULTS_LIMIT = 100;

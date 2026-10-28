@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import type { IVndbQuery } from '@/api/protocol';
+
 const novels = [
     { id: 'v1', title: 'Amber Story', released: '2001-01-01', rating: 95, image: null },
     { id: 'v2', title: 'Blue Story', released: '2020-01-01', rating: 70, image: null },
@@ -119,7 +121,7 @@ test('Saved refreshes snapshots in a batch and reuses fresh data during an outag
     await page.goto('/');
     await page.getByRole('button', { name: 'Save Amber Story', exact: true }).click();
     await page.getByRole('button', { name: 'Save Blue Story', exact: true }).click();
-    const batches: any[] = [];
+    const batches: IVndbQuery[] = [];
     await page.route('https://api.vndb.org/kana/vn', (route) => {
         batches.push(route.request().postDataJSON());
         return route.fulfill({
@@ -211,4 +213,27 @@ test('Undo expires and unknown release dates sort after known publication dates'
     await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeVisible();
     await page.clock.fastForward(8001);
     await expect(page.getByRole('button', { name: 'Undo', exact: true })).toHaveCount(0);
+});
+
+test('Saved changes reach another tab and Undo stays synchronized', async ({ page, context }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Save Amber Story', exact: true }).click();
+    const other = await context.newPage();
+    await other.route('https://api.vndb.org/kana/vn', (route) =>
+        route.fulfill({
+            json: { results: novels, more: false, count: novels.length },
+        }));
+    await other.goto('/saved');
+    await expect(other.getByRole('heading', { name: 'Amber Story' })).toBeVisible();
+    await page.getByRole('button', { name: 'Save Blue Story', exact: true }).click();
+    await expect(other.getByRole('heading', { name: 'Blue Story' })).toBeVisible();
+    await other.getByRole('button', { name: 'Saved Amber Story', exact: true }).click();
+    await expect(
+        page.getByRole('button', { name: 'Save Amber Story', exact: true })
+    ).toHaveAttribute('aria-pressed', 'false');
+    await other.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(
+        page.getByRole('button', { name: 'Saved Amber Story', exact: true })
+    ).toHaveAttribute('aria-pressed', 'true');
+    await other.close();
 });

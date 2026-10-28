@@ -2,6 +2,7 @@
     import { computed, onBeforeUnmount, ref, watch } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
 
+    import { SaveButton } from '@/components/saved';
     import { vndbRequestMessage } from '@/components/vndb-feedback';
 
     import { selectionFromQuery, selectionToQuery } from '../modules/catalog/selection';
@@ -16,7 +17,6 @@
     import CacheNotice from '../ui/CacheNotice.vue';
     import CoverImage from '../ui/CoverImage.vue';
     import ReleaseGroups from '../ui/ReleaseGroups.vue';
-    import SaveButton from '../ui/SaveButton.vue';
     import ScreenshotGallery from '../ui/ScreenshotGallery.vue';
     import SourceDescription from '../ui/SourceDescription';
 

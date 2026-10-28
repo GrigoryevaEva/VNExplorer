@@ -4,7 +4,6 @@
     import { formatRating, formatReleaseDate } from '../modules/vndb/format';
     import type { VisualNovelCard } from '../modules/vndb/types';
     import CoverImage from './CoverImage.vue';
-    import SaveButton from './SaveButton.vue';
     defineProps<{ novel: VisualNovelCard; index?: number }>();
     const card = ref<HTMLElement>();
     let observer: ResizeObserver | undefined;
@@ -60,7 +59,7 @@
                     >
                     {{ formatRating(novel.rating) }}</span
                 ></div
-            ><SaveButton :novel="novel"
+            ><slot name="actions"
         /></div>
     </article>
 </template>

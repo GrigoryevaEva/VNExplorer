@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import { CatalogPage } from '@/pages/catalog';
+import { SavedPage } from '@/pages/saved';
 
 import NovelDetailsPage from '../pages/NovelDetailsPage.vue';
-import SavedPage from '../pages/SavedPage.vue';
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
