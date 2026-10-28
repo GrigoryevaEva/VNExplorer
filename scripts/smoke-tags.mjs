@@ -11,7 +11,9 @@ let browser;
 try {
     for (let attempt = 0; attempt < 40; attempt++) {
         try {
-            if ((await fetch(origin)).ok) break;
+            if ((await fetch(origin)).ok) {
+                break;
+            }
         } catch {
             // The dev server may still be starting; retry until the bounded deadline.
         }
@@ -28,11 +30,13 @@ try {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
-            if (!response.ok) throw new Error(`${endpoint}: HTTP ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`${endpoint}: HTTP ${response.status}`);
+            }
             return response.json();
         }
         const tags = [];
-        for (const page of [1, 2])
+        for (const page of [1, 2]) {
             tags.push(
                 await query('tag', {
                     fields: 'name,description,searchable',
@@ -41,6 +45,7 @@ try {
                     page,
                 })
             );
+        }
         const novels = await query('vn', {
             filters: ['tag', '=', ['g96', 0, 0]],
             fields: 'title,tags{id,spoiler,rating}',

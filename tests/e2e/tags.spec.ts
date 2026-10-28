@@ -16,7 +16,9 @@ test('complete tag directory supports curated sections and local global search',
     await page.route('https://api.vndb.org/kana/tag', async (route) => {
         const query = route.request().postDataJSON();
         tagPages.push(query.page);
-        if (query.page === 2) await secondGate;
+        if (query.page === 2) {
+            await secondGate;
+        }
         return route.fulfill({
             json: {
                 results:

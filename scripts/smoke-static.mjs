@@ -24,7 +24,9 @@ async function serve(directory, base) {
             }
             let file = target;
             try {
-                if (!(await stat(file)).isFile()) throw new Error('Not a file');
+                if (!(await stat(file)).isFile()) {
+                    throw new Error('Not a file');
+                }
             } catch {
                 if (extname(path)) {
                     response.writeHead(404).end();
@@ -76,8 +78,9 @@ try {
             const assets = [];
             page.on('pageerror', (error) => errors.push(error.message));
             page.on('response', (response) => {
-                if (response.url().startsWith(origin) && /\.(js|css)$/.test(response.url()))
+                if (response.url().startsWith(origin) && /\.(js|css)$/.test(response.url())) {
                     assets.push({ url: response.url(), status: response.status() });
+                }
             });
             const cards = Array.from({ length: 24 }, (_, i) => ({
                 id: i ? `v${100 + i}` : 'v17',

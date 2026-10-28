@@ -46,10 +46,16 @@ test('complete language directory stays light until expansion and loads every re
             body.filters[0] === 'id'
                 ? [body.filters[2] as string]
                 : (body.filters.slice(1) as [string, string, string][]).map((filter) => filter[2]);
-        if (body.filters[0] === 'or') expect(ids.length).toBeGreaterThan(1);
-        for (const id of ids) expect(id).toMatch(/^r[1-9]\d*$/);
+        if (body.filters[0] === 'or') {
+            expect(ids.length).toBeGreaterThan(1);
+        }
+        for (const id of ids) {
+            expect(id).toMatch(/^r[1-9]\d*$/);
+        }
         expect(ids.length).toBeLessThanOrEqual(100);
-        if (ids.includes('r101')) await gate;
+        if (ids.includes('r101')) {
+            await gate;
+        }
         return route.fulfill({
             json: {
                 results: ids.map((id) => ({
@@ -120,20 +126,25 @@ test('failed release batch keeps loaded rows and retry preserves dates, ages and
         }));
     await page.route('https://api.vndb.org/kana/release', (route) => {
         const body = route.request().postDataJSON();
-        if (!body.fields.includes('title'))
+        if (!body.fields.includes('title')) {
             return route.fulfill({
                 json: {
                     results: body.page === 1 ? manifest.slice(0, 100) : manifest.slice(100),
                     more: body.page === 1,
                 },
             });
+        }
         expect(['or', 'id']).toContain(body.filters[0]);
         const ids =
             body.filters[0] === 'id'
                 ? [body.filters[2] as string]
                 : (body.filters.slice(1) as [string, string, string][]).map((filter) => filter[2]);
-        if (body.filters[0] === 'or') expect(ids.length).toBeGreaterThan(1);
-        for (const id of ids) expect(id).toMatch(/^r[1-9]\d*$/);
+        if (body.filters[0] === 'or') {
+            expect(ids.length).toBeGreaterThan(1);
+        }
+        for (const id of ids) {
+            expect(id).toMatch(/^r[1-9]\d*$/);
+        }
         batches.push(ids);
         if (ids.includes('r101') && fail) {
             fail = false;
@@ -149,7 +160,7 @@ test('failed release batch keeps loaded rows and retry preserves dates, ages and
             extlinks: [] as { name: string; label: string; url: string }[],
         }));
         for (const record of records) {
-            if (record.id === 'r1')
+            if (record.id === 'r1') {
                 Object.assign(record, {
                     title: 'Future demo',
                     released: '2099-05',
@@ -164,7 +175,8 @@ test('failed release batch keeps loaded rows and retry preserves dates, ages and
                         { name: 'steam', label: 'Steam', url: 'https://store.example/demo' },
                     ],
                 });
-            if (record.id === 'r2')
+            }
+            if (record.id === 'r2') {
                 Object.assign(record, {
                     title: 'Partial patch',
                     released: '2024',
@@ -177,7 +189,8 @@ test('failed release batch keeps loaded rows and retry preserves dates, ages and
                         { name: 'website', label: 'Mirror', url: 'https://mirror.example/patch' },
                     ],
                 });
-            if (record.id === 'r3')
+            }
+            if (record.id === 'r3') {
                 Object.assign(record, {
                     title: 'Machine translation',
                     released: '2023-02-03',
@@ -187,8 +200,10 @@ test('failed release batch keeps loaded rows and retry preserves dates, ages and
                         { name: 'steam', label: 'Steam', url: 'https://store.example/game' },
                     ],
                 });
-            if (record.id === 'r101')
+            }
+            if (record.id === 'r101') {
                 Object.assign(record, { title: 'Pending edition', released: 'TBA' });
+            }
         }
         return route.fulfill({ json: { results: records, more: false } });
     });

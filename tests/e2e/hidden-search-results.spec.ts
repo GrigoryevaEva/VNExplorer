@@ -4,7 +4,9 @@ for (const mobile of [false, true]) {
     test(`empty filtered title search explains the exact total and recovers without filters (${mobile ? 'phone' : 'desktop'})`, async ({
         page,
     }) => {
-        if (mobile) await page.setViewportSize({ width: 390, height: 844 });
+        if (mobile) {
+            await page.setViewportSize({ width: 390, height: 844 });
+        }
         await page.route('https://api.vndb.org/kana/tag', (route) =>
             route.fulfill({
                 json: { results: [{ id: 'g4', name: 'Fantasy', description: '' }], more: false },
@@ -48,7 +50,9 @@ for (const mobile of [false, true]) {
         await expect(page).toHaveURL(/\?q=story&sort=released$/);
         await expect(page.getByRole('heading', { name: 'Recovered story' })).toBeVisible();
         await expect(page.getByRole('searchbox', { name: 'Search titles' })).toHaveValue('story');
-        if (mobile) await page.getByRole('button', { name: 'Filters', exact: true }).click();
+        if (mobile) {
+            await page.getByRole('button', { name: 'Filters', exact: true }).click();
+        }
         await expect(page.getByRole('radio', { name: 'All', exact: true })).toBeChecked();
         await expect(page.getByRole('button', { name: /Remove included tag/ })).toHaveCount(0);
         expect(queries).toHaveLength(3);
@@ -59,16 +63,19 @@ for (const mobile of [false, true]) {
     test(`failed diagnostic count is retriable, never a missing title (${mobile ? 'phone' : 'desktop'})`, async ({
         page,
     }) => {
-        if (mobile) await page.setViewportSize({ width: 390, height: 844 });
+        if (mobile) {
+            await page.setViewportSize({ width: 390, height: 844 });
+        }
         let failCount = true;
         await page.route('https://api.vndb.org/kana/vn', async (route) => {
             const query = route.request().postDataJSON();
-            if (query.results === 0 && failCount)
+            if (query.results === 0 && failCount) {
                 await route.fulfill({ status: 503, json: { error: 'Unavailable' } });
-            else
+            } else {
                 await route.fulfill({
                     json: { results: [], count: query.results === 0 ? 42 : 0, more: false },
                 });
+            }
         });
         await page.goto('/?q=story&language=en');
         await expect(page.getByRole('alert')).toContainText('Could not check title matches.');
@@ -85,7 +92,9 @@ for (const mobile of [false, true]) {
     test(`a true zero title count stays empty (${mobile ? 'phone' : 'desktop'})`, async ({
         page,
     }) => {
-        if (mobile) await page.setViewportSize({ width: 390, height: 844 });
+        if (mobile) {
+            await page.setViewportSize({ width: 390, height: 844 });
+        }
         const queries: Record<string, unknown>[] = [];
         await page.route('https://api.vndb.org/kana/vn', async (route) => {
             queries.push(route.request().postDataJSON());
@@ -151,11 +160,13 @@ test('failed initial request offers retry before checking title matches', async 
     await page.route('https://api.vndb.org/kana/vn', async (route) => {
         const query = route.request().postDataJSON();
         queries.push(query);
-        if (failed) await route.fulfill({ status: 503, json: { error: 'Unavailable' } });
-        else
+        if (failed) {
+            await route.fulfill({ status: 503, json: { error: 'Unavailable' } });
+        } else {
             await route.fulfill({
                 json: { results: [], more: false, count: query.results === 0 ? 9 : 0 },
             });
+        }
     });
     await page.goto('/?q=story&language=en');
     await expect(page.getByRole('alert')).toBeVisible();

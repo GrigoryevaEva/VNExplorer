@@ -13,11 +13,15 @@ test('included combinations use strict all or any, and always exclude unwanted t
             { id: 'v3', title: 'Violent fantasy romance', tags: ['g2', 'g96', 'g3'] },
         ];
         function matches(predicate: any[], tags: string[]): boolean {
-            if (!predicate.length) return true;
-            if (predicate[0] === 'and')
+            if (!predicate.length) {
+                return true;
+            }
+            if (predicate[0] === 'and') {
                 return predicate.slice(1).every((child) => matches(child, tags));
-            if (predicate[0] === 'or')
+            }
+            if (predicate[0] === 'or') {
                 return predicate.slice(1).some((child) => matches(child, tags));
+            }
             return predicate[1] === '='
                 ? tags.includes(predicate[2][0])
                 : !tags.includes(predicate[2][0]);

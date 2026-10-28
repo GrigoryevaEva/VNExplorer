@@ -9,7 +9,9 @@ const screenshots = [1, 2, 3].map((index) => ({
 }));
 async function gallery(page: Page, images = screenshots, brokenImage = false) {
     await page.route('https://images.example/**', (route) => {
-        if (brokenImage && route.request().url().endsWith('-2.svg')) return route.abort();
+        if (brokenImage && route.request().url().endsWith('-2.svg')) {
+            return route.abort();
+        }
         return route.fulfill({
             contentType: 'image/svg+xml',
             body: '<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900"><rect width="1600" height="900" fill="#c2dfd0"/></svg>',

@@ -48,7 +48,9 @@
         }
     }
     onBeforeUnmount(() => {
-        if (viewer.value?.open) restore();
+        if (viewer.value?.open) {
+            restore();
+        }
     });
     function move(step: number) {
         index.value = (index.value + step + props.screenshots.length) % props.screenshots.length;

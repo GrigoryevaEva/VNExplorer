@@ -21,10 +21,14 @@ try {
         } catch {
             /* Wait for the local server. */
         }
-        if (ready) break;
+        if (ready) {
+            break;
+        }
         await new Promise((resolve) => setTimeout(resolve, 250));
     }
-    if (!ready) throw new Error(`Dev server did not start. ${serverLog}`);
+    if (!ready) {
+        throw new Error(`Dev server did not start. ${serverLog}`);
+    }
     browser = await chromium.launch();
     const page = await browser.newPage({ viewport: { width: 1440, height: 1050 } });
     const request = page.waitForResponse(
@@ -35,7 +39,9 @@ try {
     );
     await page.goto(`${base}/vn/v17`);
     const response = await request;
-    if (!response.ok()) throw new Error(`Live API returned ${response.status()}`);
+    if (!response.ok()) {
+        throw new Error(`Live API returned ${response.status()}`);
+    }
     const body = await response.json();
     await page
         .getByRole('heading', { name: body.results[0].title, exact: true, level: 1 })

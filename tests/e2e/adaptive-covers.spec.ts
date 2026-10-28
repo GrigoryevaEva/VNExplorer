@@ -25,7 +25,9 @@ test('complete Catalog heading fits on one line on phone and tablet', async ({
         expect(layout.textWidth).toBeLessThanOrEqual(layout.available + 1);
         expect(layout.right).toBeLessThanOrEqual(width);
         expect(layout.overflow).not.toBe('ellipsis');
-        if (width === 320) await page.screenshot({ path: testInfo.outputPath('heading-320.png') });
+        if (width === 320) {
+            await page.screenshot({ path: testInfo.outputPath('heading-320.png') });
+        }
     }
 });
 

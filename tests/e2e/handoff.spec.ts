@@ -89,7 +89,9 @@ test('ordinary release titles show source edition kinds for the current novel an
         }));
     await page.route('https://api.vndb.org/kana/release', (route) => {
         const query = route.request().postDataJSON();
-        if (query.fields.includes('title')) detailFields.push(query.fields);
+        if (query.fields.includes('title')) {
+            detailFields.push(query.fields);
+        }
         return route.fulfill({
             json: {
                 results: query.fields.includes('title')

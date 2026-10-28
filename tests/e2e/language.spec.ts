@@ -74,7 +74,7 @@ test('mobile Filters accepts published full, partial, demo, unofficial and machi
     await page.route('https://api.vndb.org/kana/vn', async (route) => {
         const query = route.request().postDataJSON();
         requests.push(query.filters);
-        if (requests.length > 1)
+        if (requests.length > 1) {
             expect(query.filters).toEqual([
                 'release',
                 '=',
@@ -85,6 +85,7 @@ test('mobile Filters accepts published full, partial, demo, unofficial and machi
                     ['released', '!=', 'unknown'],
                 ],
             ]);
+        }
         // The source performs release matching and returns full VN cards; aggregate vn.languages
         // can omit demo/partial languages. Future-only and unknown-date translations do not qualify.
         const titles =
@@ -117,8 +118,9 @@ test('mobile Filters accepts published full, partial, demo, unofficial and machi
     await page.getByRole('button', { name: 'Apply filters', exact: true }).click();
     await expect(page.getByRole('dialog')).not.toBeVisible();
     await expect(page).toHaveURL(/language=en$/);
-    for (const title of published)
+    for (const title of published) {
         await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
+    }
     await expect(page.getByRole('heading', { name: 'Future-only translation' })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Unknown publication date' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Filters', exact: true }).click();

@@ -12,20 +12,4 @@ export interface VisualNovelCard {
     image: VndbImage | null;
 }
 
-export interface VndbResponse<T> {
-    results: T[];
-    more: boolean;
-    count?: number;
-    stale?: boolean;
-    fetchedAt?: number;
-}
-
-export interface VndbQuery {
-    filters?: unknown[];
-    fields: string;
-    sort?: string;
-    reverse?: boolean;
-    results?: number;
-    page?: number;
-    count?: boolean;
-}
+export type { IVndbQuery as VndbQuery, IVndbResponse as VndbResponse } from '@/api/protocol';

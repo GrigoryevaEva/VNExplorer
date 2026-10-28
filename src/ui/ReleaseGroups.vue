@@ -1,6 +1,8 @@
 <script setup lang="ts">
     import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 
+    import { vndbRequestMessage } from '@/components/vndb-feedback';
+
     import { formatReleaseDate } from '../modules/vndb/format';
     import {
         fetchReleaseDetails,
@@ -15,6 +17,7 @@
         releaseWebsites,
     } from '../modules/vndb/releases';
     import CacheNotice from './CacheNotice.vue';
+    const INCOMPLETE_RELEASE_MESSAGE = 'Some release details are unavailable. Please try again.';
     const props = defineProps<{ novelId: string }>();
     const directory = ref<ReleaseAssignment[]>([]);
     const manifestLoading = ref(true);
@@ -29,18 +32,25 @@
     let queue = Promise.resolve();
     const groups = computed(() => {
         const assignments = new Map<string, string[]>();
-        for (const release of directory.value)
+        for (const release of directory.value) {
             for (const { lang } of release.languages) {
-                if (!assignments.has(lang)) assignments.set(lang, []);
-                if (!assignments.get(lang)!.includes(release.id))
+                if (!assignments.has(lang)) {
+                    assignments.set(lang, []);
+                }
+                if (!assignments.get(lang)!.includes(release.id)) {
                     assignments.get(lang)!.push(release.id);
+                }
             }
+        }
         return [...assignments]
             .map(([code, ids]) => ({ code, ids, name: languageName(code) }))
             .sort((a, b) => a.name.localeCompare(b.name));
     });
     function message(reason: unknown) {
-        return reason instanceof Error ? reason.message : 'Please try again.';
+        if (reason instanceof Error && reason.message === INCOMPLETE_RELEASE_MESSAGE) {
+            return reason.message;
+        }
+        return vndbRequestMessage(reason);
     }
     async function loadDirectory() {
         manifestLoading.value = true;
@@ -51,7 +61,9 @@
                 manifestStale.value = true;
             });
         } catch (reason) {
-            if (!controller.signal.aborted) manifestError.value = message(reason);
+            if (!controller.signal.aborted) {
+                manifestError.value = message(reason);
+            }
         } finally {
             manifestLoading.value = false;
         }
@@ -63,32 +75,45 @@
         return newestReleases(ids.flatMap((id) => (details.has(id) ? [details.get(id)!] : [])));
     }
     function loadGroup(code: string, ids: string[]) {
-        if (loading.has(code) || loaded(ids) === ids.length) return;
+        if (loading.has(code) || loaded(ids) === ids.length) {
+            return;
+        }
         loading.add(code);
         errors.delete(code);
         queue = queue.then(async () => {
             try {
                 while (!controller.signal.aborted) {
                     const batch = ids.filter((id) => !details.has(id)).slice(0, 100);
-                    if (!batch.length) break;
+                    if (!batch.length) {
+                        break;
+                    }
                     const result = await fetchReleaseDetails(batch, controller.signal, () => {
-                        for (const id of batch) staleReleases.add(id);
+                        for (const id of batch) {
+                            staleReleases.add(id);
+                        }
                     });
-                    for (const release of result)
-                        if (batch.includes(release.id)) details.set(release.id, release);
-                    if (batch.some((id) => !details.has(id)))
-                        throw new Error('Some release details are unavailable. Please try again.');
+                    for (const release of result) {
+                        if (batch.includes(release.id)) {
+                            details.set(release.id, release);
+                        }
+                    }
+                    if (batch.some((id) => !details.has(id))) {
+                        throw new Error(INCOMPLETE_RELEASE_MESSAGE);
+                    }
                 }
             } catch (reason) {
-                if (!controller.signal.aborted) errors.set(code, message(reason));
+                if (!controller.signal.aborted) {
+                    errors.set(code, message(reason));
+                }
             } finally {
                 loading.delete(code);
             }
         });
     }
     function toggle(code: string, ids: string[]) {
-        if (expanded.has(code)) expanded.delete(code);
-        else {
+        if (expanded.has(code)) {
+            expanded.delete(code);
+        } else {
             expanded.add(code);
             loadGroup(code, ids);
         }

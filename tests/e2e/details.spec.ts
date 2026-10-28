@@ -156,8 +156,9 @@ test('detail loading, failure retry and unknown IDs are distinct outcomes', asyn
     });
     let failed = false;
     await page.route('https://api.vndb.org/kana/vn', async (route) => {
-        if (route.request().postDataJSON().filters[2] === 'v999999')
+        if (route.request().postDataJSON().filters[2] === 'v999999') {
             return route.fulfill({ json: { results: [], more: false } });
+        }
         if (!failed) {
             failed = true;
             await gate;

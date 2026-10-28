@@ -18,7 +18,9 @@ export function loadTagDirectory(
     if (pending) {
         listeners.add({ progress, onStale });
         progress(loaded);
-        if (stale) onStale?.();
+        if (stale) {
+            onStale?.();
+        }
         return pending;
     }
     loaded = 0;
@@ -34,14 +36,24 @@ export function loadTagDirectory(
                 {
                     onStale: () => {
                         stale = true;
-                        for (const listener of listeners) listener.onStale?.();
+                        for (const listener of listeners) {
+                            listener.onStale?.();
+                        }
                     },
                 }
             );
-            for (const tag of response.results) if (tag.searchable) tags.set(tag.id, tag);
+            for (const tag of response.results) {
+                if (tag.searchable) {
+                    tags.set(tag.id, tag);
+                }
+            }
             loaded = tags.size;
-            for (const listener of listeners) listener.progress(loaded);
-            if (!response.more) break;
+            for (const listener of listeners) {
+                listener.progress(loaded);
+            }
+            if (!response.more) {
+                break;
+            }
         }
         return [...tags.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'));
     })().finally(() => {
