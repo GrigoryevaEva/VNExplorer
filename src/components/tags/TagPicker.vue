@@ -1,48 +1,48 @@
 <script setup lang="ts">
+    import { storeToRefs } from 'pinia';
     import { computed, onMounted, ref } from 'vue';
 
-    import { type DirectoryTag, loadTagDirectory, tagSections } from '../modules/tags/directory';
-    import CacheNotice from './CacheNotice.vue';
-    import SourceDescription from './SourceDescription';
-    const props = defineProps<{ included: string[]; excluded: string[] }>();
-    const emit = defineEmits<{ select: [id: string, action: 'include' | 'exclude']; done: [] }>();
+    import { useEventListener } from '@vueuse/core';
+
+    import type { TCatalogTagAction } from '@/entities/catalog';
+    import { CATALOG_TAG_ACTIONS } from '@/entities/catalog';
+    import {
+        ALL_TAGS_SECTION,
+        DEFAULT_TAG_SECTION,
+        selectDirectoryTags,
+        TAG_SECTIONS,
+    } from '@/entities/tag';
+    import { useTagsStore } from '@/stores/tags';
+    import CacheNotice from '@/ui/CacheNotice.vue';
+    import SourceDescription from '@/ui/SourceDescription';
+
+    import { TAG_DESCRIPTION_FALLBACK } from './constants';
+
+    interface ITagPickerProps {
+        included: readonly string[];
+        excluded: readonly string[];
+    }
+    const props = defineProps<ITagPickerProps>();
+    const emit = defineEmits<{ select: [id: string, action: TCatalogTagAction]; done: [] }>();
     const dialog = ref<HTMLDialogElement>();
-    const tags = ref<DirectoryTag[]>([]);
-    const section = ref('Genres & Themes');
+    const store = useTagsStore();
+    const {
+        tags,
+        loading,
+        loaded,
+        error,
+        stale,
+    } = storeToRefs(store);
+    const { loadDirectory } = store;
+    const section = ref(DEFAULT_TAG_SECTION);
     const search = ref('');
     const about = ref('');
-    const loading = ref(true);
-    const loaded = ref(0);
-    const error = ref('');
-    const stale = ref(false);
-    const shown = computed(() => {
-        const term = search.value.trim().toLocaleLowerCase('en');
-        const ids = tagSections.find((item) => item.name === section.value)?.ids;
-        return tags.value.filter((tag) =>
-            term ? tag.name.toLocaleLowerCase('en').includes(term) : !ids || ids.includes(tag.id));
-    });
-    async function load() {
-        loading.value = true;
-        error.value = '';
-        stale.value = false;
-        try {
-            tags.value = await loadTagDirectory(
-                (count) => {
-                    loaded.value = count;
-                },
-                () => {
-                    stale.value = true;
-                }
-            );
-        } catch {
-            error.value = 'Tags could not be loaded. Please try again.';
-        } finally {
-            loading.value = false;
-        }
-    }
+    const shown = computed(() => selectDirectoryTags(tags.value, section.value, search.value));
+
+    useEventListener(dialog, 'close', () => emit('done'));
     onMounted(() => {
         dialog.value?.showModal();
-        void load();
+        void loadDirectory();
     });
 </script>
 <template>
@@ -50,7 +50,6 @@
         ref="dialog"
         class="tag-picker"
         aria-labelledby="tag-heading"
-        @close="emit('done')"
     >
         <header
             ><div
@@ -70,7 +69,7 @@
         /></label>
         <nav aria-label="Tag sections"
             ><button
-                v-for="name in [...tagSections.map((item) => item.name), 'All tags']"
+                v-for="name in [...TAG_SECTIONS.map((item) => item.name), ALL_TAGS_SECTION]"
                 :key="name"
                 :aria-pressed="section === name"
                 @click="section = name"
@@ -88,7 +87,7 @@
             ><p>{{ error }}</p
             ><button
                 class="button button--lime"
-                @click="load"
+                @click="loadDirectory"
                 >Retry tags</button
             ></div
         >
@@ -120,20 +119,20 @@
                             class="tag-include"
                             :aria-label="`Include ${tag.name}`"
                             :aria-pressed="props.included.includes(tag.id)"
-                            @click="emit('select', tag.id, 'include')"
+                            @click="emit('select', tag.id, CATALOG_TAG_ACTIONS.INCLUDE)"
                             >+ Include</button
                         ><button
                             class="tag-exclude"
                             :aria-label="`Exclude ${tag.name}`"
                             :aria-pressed="props.excluded.includes(tag.id)"
-                            @click="emit('select', tag.id, 'exclude')"
+                            @click="emit('select', tag.id, CATALOG_TAG_ACTIONS.EXCLUDE)"
                             >− Exclude</button
                         ></div
                     ><SourceDescription
                         v-if="about === tag.id"
                         :id="`description-${tag.id}`"
                         class="tag-description"
-                        :text="tag.description || 'No description available.'" /></li
+                        :text="tag.description || TAG_DESCRIPTION_FALLBACK" /></li
             ></ul>
             <p v-if="!shown.length">No tags found. Try searching all tags.</p>
         </div>

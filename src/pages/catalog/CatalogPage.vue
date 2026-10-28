@@ -1,9 +1,9 @@
 <script setup lang="ts">
+    import { TagPicker } from '@/components/tags';
     import { selectionWithoutFilters } from '@/entities/catalog';
     import CacheNotice from '@/ui/CacheNotice.vue';
     import LanguageFilter from '@/ui/LanguageFilter.vue';
     import NovelCard from '@/ui/NovelCard.vue';
-    import TagPicker from '@/ui/TagPicker.vue';
 
     import CatalogPagination from './components/CatalogPagination.vue';
     import { useCatalog } from './useCatalog';

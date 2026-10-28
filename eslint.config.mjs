@@ -9,10 +9,8 @@ import ts from 'typescript-eslint';
 // Remove this list and the associated override in migration ticket 11.
 const legacyFiles = [
     'src/App.vue',
-    'src/main.ts',
     'src/app/router.ts',
     'src/modules/saved/collection.ts',
-    'src/modules/tags/directory.ts',
     'src/modules/vndb/details.ts',
     'src/modules/vndb/format.ts',
     'src/modules/vndb/releases.ts',
@@ -28,7 +26,6 @@ const legacyFiles = [
     'src/ui/ScreenshotGallery.vue',
     'src/ui/ScreenshotImage.vue',
     'src/ui/SourceDescription.ts',
-    'src/ui/TagPicker.vue',
 ];
 
 export default ts.config(

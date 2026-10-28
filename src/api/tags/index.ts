@@ -1,0 +1,1 @@
+export { fetchTagDirectory } from './directory';

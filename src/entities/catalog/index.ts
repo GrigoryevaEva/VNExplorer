@@ -1,3 +1,14 @@
-export { CATALOG_LANGUAGES, CATALOG_MAX_PAGE, CATALOG_PAGE_SIZE, CATALOG_SORTS } from './constants';
-export type { ICatalogSelection, TCatalogLanguage, TCatalogSort } from './selection';
-export { createCatalogSelection, selectionWithoutFilters } from './selection';
+export {
+    CATALOG_LANGUAGES,
+    CATALOG_MAX_PAGE,
+    CATALOG_PAGE_SIZE,
+    CATALOG_SORTS,
+    CATALOG_TAG_ACTIONS,
+} from './constants';
+export type {
+    ICatalogSelection,
+    TCatalogLanguage,
+    TCatalogSort,
+    TCatalogTagAction,
+} from './selection';
+export { createCatalogSelection, selectionWithoutFilters, toggleCatalogTag } from './selection';
