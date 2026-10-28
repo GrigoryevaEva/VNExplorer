@@ -4,7 +4,7 @@ Every task branch merged into `dev` adds its own Markdown changeset. These are p
 
 ```md
 ---
-"visual-novels": minor
+'visual-novels': minor
 ---
 
 Add submitted title search with shareable catalog links.
