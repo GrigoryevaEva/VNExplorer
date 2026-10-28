@@ -1,7 +1,7 @@
 <script setup lang="ts">
-    import type { CatalogLanguage } from '../modules/catalog/selection';
-    defineProps<{ modelValue: CatalogLanguage }>();
-    defineEmits<{ 'update:modelValue': [value: CatalogLanguage] }>();
+    import type { TCatalogLanguage } from '@/entities/catalog';
+    defineProps<{ modelValue: TCatalogLanguage }>();
+    defineEmits<{ 'update:modelValue': [value: TCatalogLanguage] }>();
     const choices = [
         { value: 'all', label: 'All' },
         { value: 'ru', label: 'Russian' },

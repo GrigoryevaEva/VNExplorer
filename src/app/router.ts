@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import CatalogPage from '../pages/CatalogPage.vue';
+import { CatalogPage } from '@/pages/catalog';
+
 import NovelDetailsPage from '../pages/NovelDetailsPage.vue';
 import SavedPage from '../pages/SavedPage.vue';
 export const router = createRouter({
