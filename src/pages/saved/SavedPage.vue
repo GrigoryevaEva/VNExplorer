@@ -1,50 +1,19 @@
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+    import { SaveButton } from '@/components/saved';
+    import CacheNotice from '@/ui/CacheNotice.vue';
+    import NovelCard from '@/ui/NovelCard.vue';
 
-    import {
+    import { useSavedPage } from './useSavedPage';
+    const {
+        search,
+        sort,
+        novels,
         savedNovels,
-        type SavedSort,
-        selectSaved,
-        updateSavedSnapshots,
-    } from '../modules/saved/collection';
-    import { fetchSavedCards } from '../modules/vndb/saved';
-    import CacheNotice from '../ui/CacheNotice.vue';
-    import NovelCard from '../ui/NovelCard.vue';
-    const search = ref('');
-    const sort = ref<SavedSort>('added');
-    const novels = computed(() => selectSaved(search.value, sort.value));
-    const refreshError = ref(false);
-    const refreshing = ref(false);
-    const stale = ref(false);
-    const request = new AbortController();
-    async function refresh() {
-        if (!savedNovels.value.length) {
-            return;
-        }
-        refreshing.value = true;
-        refreshError.value = false;
-        stale.value = false;
-        try {
-            const cards = await fetchSavedCards(
-                savedNovels.value.map((novel) => novel.id),
-                request.signal,
-                () => {
-                    stale.value = true;
-                }
-            );
-            if (!request.signal.aborted && !stale.value) {
-                updateSavedSnapshots(cards);
-            }
-        } catch {
-            if (!request.signal.aborted) {
-                refreshError.value = true;
-            }
-        } finally {
-            refreshing.value = false;
-        }
-    }
-    onMounted(refresh);
-    onBeforeUnmount(() => request.abort());
+        refreshError,
+        refreshing,
+        stale,
+        refresh,
+    } = useSavedPage();
 </script>
 
 <template>
@@ -106,7 +75,8 @@
                 ><NovelCard
                     v-for="novel in novels"
                     :key="novel.id"
-                    :novel="novel" /></div
+                    :novel="novel"
+                    ><template #actions><SaveButton :novel="novel" /></template></NovelCard></div
         ></div>
     </section>
 </template>

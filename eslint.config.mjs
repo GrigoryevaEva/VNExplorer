@@ -8,21 +8,16 @@ import ts from 'typescript-eslint';
 // Explicit baseline files only: new files always receive the target rules.
 // Remove this list and the associated override in migration ticket 11.
 const legacyFiles = [
-    'src/App.vue',
     'src/app/router.ts',
-    'src/modules/saved/collection.ts',
     'src/modules/vndb/details.ts',
     'src/modules/vndb/format.ts',
     'src/modules/vndb/releases.ts',
-    'src/modules/vndb/saved.ts',
     'src/pages/NovelDetailsPage.vue',
-    'src/pages/SavedPage.vue',
     'src/ui/CacheNotice.vue',
     'src/ui/CoverImage.vue',
     'src/ui/LanguageFilter.vue',
     'src/ui/NovelCard.vue',
     'src/ui/ReleaseGroups.vue',
-    'src/ui/SaveButton.vue',
     'src/ui/ScreenshotGallery.vue',
     'src/ui/ScreenshotImage.vue',
     'src/ui/SourceDescription.ts',
@@ -139,7 +134,6 @@ export default ts.config(
     {
         files: [
             'tests/e2e/detail-tags.spec.ts',
-            'tests/e2e/saved.spec.ts',
             'tests/e2e/search-navigation.spec.ts',
             'tests/e2e/tag-combinations.spec.ts',
             'tests/e2e/tags.spec.ts',

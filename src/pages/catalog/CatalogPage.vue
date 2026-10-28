@@ -1,4 +1,5 @@
 <script setup lang="ts">
+    import { SaveButton } from '@/components/saved';
     import { TagPicker } from '@/components/tags';
     import { selectionWithoutFilters } from '@/entities/catalog';
     import CacheNotice from '@/ui/CacheNotice.vue';
@@ -168,7 +169,8 @@
                             :key="novel.id"
                             :novel="novel"
                             :index="index"
-                    /></div>
+                            ><template #actions><SaveButton :novel="novel" /></template></NovelCard
+                    ></div>
                 </div>
                 <CatalogPagination
                     :current-page="applied.page"
