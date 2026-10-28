@@ -11,3 +11,36 @@ export interface IVisualNovelCard {
     rating: number | null;
     image: INovelImage | null;
 }
+
+export interface INovelScreenshot {
+    id: string;
+    url: string;
+    thumbnail: string;
+    dims: [number, number];
+    thumbnailDimensions: [number, number];
+}
+
+export interface INovelTitle {
+    language: string;
+    title: string;
+    romanized: string | null;
+    main: boolean;
+    official: boolean;
+}
+
+export interface INovelTag {
+    id: string;
+    name: string;
+    spoilerLevel: number | null;
+}
+
+export interface IVisualNovelDetails extends IVisualNovelCard {
+    tags: INovelTag[];
+    screenshots: INovelScreenshot[];
+    titles: INovelTitle[];
+    aliases: string[];
+    description: string | null;
+    voteCount: number | null;
+    lengthCategory: number | null;
+    playTimeMinutes: number | null;
+}

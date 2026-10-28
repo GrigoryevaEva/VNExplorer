@@ -1,10 +1,11 @@
 <script setup lang="ts">
     import { onBeforeUnmount, onMounted, ref } from 'vue';
 
-    import { formatRating, formatReleaseDate } from '../modules/vndb/format';
-    import type { VisualNovelCard } from '../modules/vndb/types';
+    import type { IVisualNovelCard } from '@/entities/visual-novel';
+    import { formatRating, formatReleaseDate } from '@/entities/visual-novel';
+
     import CoverImage from './CoverImage.vue';
-    defineProps<{ novel: VisualNovelCard; index?: number }>();
+    defineProps<{ novel: IVisualNovelCard; index?: number }>();
     const card = ref<HTMLElement>();
     let observer: ResizeObserver | undefined;
     onMounted(() => {

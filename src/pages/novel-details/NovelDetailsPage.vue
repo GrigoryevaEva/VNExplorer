@@ -1,82 +1,25 @@
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, ref, watch } from 'vue';
-    import { useRoute, useRouter } from 'vue-router';
-
+    import { VNDB_SITE_URL } from '@/api/protocol';
     import { SaveButton } from '@/components/saved';
-    import { vndbRequestMessage } from '@/components/vndb-feedback';
+    import { formatPlayTime, formatRating, formatReleaseDate } from '@/entities/visual-novel';
+    import { SourceDescription } from '@/shared/ui/source-description';
+    import CacheNotice from '@/ui/CacheNotice.vue';
+    import CoverImage from '@/ui/CoverImage.vue';
+    import ReleaseGroups from '@/ui/ReleaseGroups.vue';
+    import ScreenshotGallery from '@/ui/ScreenshotGallery.vue';
 
-    import { selectionFromQuery, selectionToQuery } from '../modules/catalog/selection';
-    import {
-        alternativeTitles,
-        fetchNovelDetails,
-        formatPlayTime,
-        spoilerFreeTags,
-        type VisualNovelDetails,
-    } from '../modules/vndb/details';
-    import { formatRating, formatReleaseDate } from '../modules/vndb/format';
-    import CacheNotice from '../ui/CacheNotice.vue';
-    import CoverImage from '../ui/CoverImage.vue';
-    import ReleaseGroups from '../ui/ReleaseGroups.vue';
-    import ScreenshotGallery from '../ui/ScreenshotGallery.vue';
-    import SourceDescription from '../ui/SourceDescription';
+    import { catalogTagQuery, useNovelDetails } from './useNovelDetails';
 
-    const route = useRoute();
-    const router = useRouter();
-    function returnToCatalog(event: MouseEvent) {
-        const previous: unknown = window.history.state?.back;
-        if (
-            !event.ctrlKey &&
-            !event.metaKey &&
-            !event.shiftKey &&
-            !event.altKey &&
-            typeof previous === 'string' &&
-            /^\/(?:\?|$)/.test(previous)
-        ) {
-            event.preventDefault();
-            router.back();
-        }
-    }
-    const novel = ref<VisualNovelDetails | null>(null);
-    const loading = ref(false);
-    const error = ref('');
-    const stale = ref(false);
-    const titles = computed(() => (novel.value ? alternativeTitles(novel.value) : []));
-    const tags = computed(() => (novel.value ? spoilerFreeTags(novel.value) : []));
-    let controller: AbortController | undefined;
-    async function load() {
-        controller?.abort();
-        const request = new AbortController();
-        controller = request;
-        novel.value = null;
-        error.value = '';
-        stale.value = false;
-        const id = String(route.params.id);
-        if (!/^v[1-9]\d*$/.test(id)) {
-            loading.value = false;
-            return;
-        }
-        loading.value = true;
-        try {
-            const result = await fetchNovelDetails(id, request.signal, () => {
-                if (!request.signal.aborted) {
-                    stale.value = true;
-                }
-            });
-            if (!request.signal.aborted) {
-                novel.value = result;
-            }
-        } catch (reason) {
-            if (!request.signal.aborted) {
-                error.value = vndbRequestMessage(reason);
-            }
-        } finally {
-            if (!request.signal.aborted) {
-                loading.value = false;
-            }
-        }
-    }
-    watch(() => route.params.id, load, { immediate: true });
-    onBeforeUnmount(() => controller?.abort());
+    const {
+        novel,
+        loading,
+        error,
+        stale,
+        titles,
+        tags,
+        load,
+        returnToCatalog,
+    } = useNovelDetails();
 </script>
 
 <template>
@@ -130,9 +73,9 @@
                             ><dt>Rating</dt
                             ><dd class="detail-rating">{{ formatRating(novel.rating) }}</dd
                             ><p>{{
-                                novel.votecount == null
+                                novel.voteCount == null
                                     ? 'Vote count unknown'
-                                    : `${novel.votecount.toLocaleString('en')} votes`
+                                    : `${novel.voteCount.toLocaleString('en')} votes`
                             }}</p></div
                         ><div
                             ><dt>First release</dt
@@ -149,6 +92,7 @@
                 ><h2 id="description-heading">The story</h2
                 ><SourceDescription
                     v-if="novel.description"
+                    :base-url="VNDB_SITE_URL"
                     class="detail-description"
                     :text="novel.description"
                 /><p
@@ -188,7 +132,7 @@
                         ><RouterLink
                             :to="{
                                 name: 'catalog',
-                                query: selectionToQuery(selectionFromQuery({ tag: tag.id })),
+                                query: catalogTagQuery(tag.id),
                             }"
                             >{{ tag.name }}</RouterLink
                         ></li
@@ -199,7 +143,7 @@
                     >No spoiler-free tags listed.</p
                 ></section
             >
-            <ScreenshotGallery :screenshots="novel.screenshots ?? []" />
+            <ScreenshotGallery :screenshots="novel.screenshots" />
             <ReleaseGroups
                 :key="novel.id"
                 :novel-id="novel.id"
