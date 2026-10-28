@@ -9,18 +9,13 @@ import ts from 'typescript-eslint';
 // Remove this list and the associated override in migration ticket 11.
 const legacyFiles = [
     'src/app/router.ts',
-    'src/modules/vndb/details.ts',
-    'src/modules/vndb/format.ts',
     'src/modules/vndb/releases.ts',
-    'src/pages/NovelDetailsPage.vue',
     'src/ui/CacheNotice.vue',
     'src/ui/CoverImage.vue',
     'src/ui/LanguageFilter.vue',
-    'src/ui/NovelCard.vue',
     'src/ui/ReleaseGroups.vue',
     'src/ui/ScreenshotGallery.vue',
     'src/ui/ScreenshotImage.vue',
-    'src/ui/SourceDescription.ts',
 ];
 
 export default ts.config(
@@ -133,7 +128,6 @@ export default ts.config(
     },
     {
         files: [
-            'tests/e2e/detail-tags.spec.ts',
             'tests/e2e/search-navigation.spec.ts',
             'tests/e2e/tag-combinations.spec.ts',
             'tests/e2e/tags.spec.ts',
@@ -145,10 +139,6 @@ export default ts.config(
     {
         files: ['tests/e2e/gallery.spec.ts', 'tests/e2e/tag-combinations.spec.ts'],
         rules: { 'func-style': 'off' },
-    },
-    {
-        files: ['tests/e2e/detail-tags.spec.ts'],
-        rules: { 'no-nested-ternary': 'off' },
     },
     // Disable formatting conflicts after all presets and overrides. Re-enable
     // the compatible all-braces convention (Prettier's preset disables curly).

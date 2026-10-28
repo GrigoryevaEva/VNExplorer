@@ -1,10 +1,11 @@
 <script setup lang="ts">
     import { computed, onBeforeUnmount, ref } from 'vue';
 
-    import type { Screenshot } from '../modules/vndb/details';
+    import type { INovelScreenshot } from '@/entities/visual-novel';
+
     import ScreenshotImage from './ScreenshotImage.vue';
 
-    const props = defineProps<{ screenshots: Screenshot[] }>();
+    const props = defineProps<{ screenshots: INovelScreenshot[] }>();
     const viewer = ref<HTMLDialogElement>();
     const isOpen = ref(false);
     const index = ref(0);
@@ -81,7 +82,7 @@
                 <ScreenshotImage
                     :src="image.thumbnail"
                     alt=""
-                    :dims="image.thumbnail_dims"
+                    :dims="image.thumbnailDimensions"
                     lazy
                 />
             </button>

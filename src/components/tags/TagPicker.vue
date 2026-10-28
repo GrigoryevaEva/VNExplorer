@@ -4,6 +4,7 @@
 
     import { useEventListener } from '@vueuse/core';
 
+    import { VNDB_SITE_URL } from '@/api/protocol';
     import type { TCatalogTagAction } from '@/entities/catalog';
     import { CATALOG_TAG_ACTIONS } from '@/entities/catalog';
     import {
@@ -12,9 +13,9 @@
         selectDirectoryTags,
         TAG_SECTIONS,
     } from '@/entities/tag';
+    import { SourceDescription } from '@/shared/ui/source-description';
     import { useTagsStore } from '@/stores/tags';
     import CacheNotice from '@/ui/CacheNotice.vue';
-    import SourceDescription from '@/ui/SourceDescription';
 
     import { TAG_DESCRIPTION_FALLBACK } from './constants';
 
@@ -131,6 +132,7 @@
                     ><SourceDescription
                         v-if="about === tag.id"
                         :id="`description-${tag.id}`"
+                        :base-url="VNDB_SITE_URL"
                         class="tag-description"
                         :text="tag.description || TAG_DESCRIPTION_FALLBACK" /></li
             ></ul>

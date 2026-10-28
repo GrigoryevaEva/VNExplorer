@@ -18,3 +18,5 @@ export const VNDB_OPERATORS = {
 } as const;
 export const HTTP_STATUS = { RATE_LIMIT: 429, SERVER_ERROR_MIN: 500 } as const;
 export const CARD_FIELDS = 'title,released,rating,image{url,thumbnail,dims}';
+
+export const VNDB_SITE_URL = 'https://vndb.org';

@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import type { IVndbQuery } from '@/api/protocol';
+
 const associationTags = [
     { id: 'g2', name: 'Fantasy', spoiler: 0 },
     { id: 'g96', name: 'Romance', spoiler: 1 },
@@ -9,7 +11,7 @@ const associationTags = [
 test('detail tags use the spoiler level of each novel association and sit before screenshots', async ({
     page,
 }) => {
-    const detailQueries: any[] = [];
+    const detailQueries: IVndbQuery[] = [];
     await page.route('https://api.vndb.org/kana/vn', (route) => {
         const query = route.request().postDataJSON();
         detailQueries.push(query);
@@ -21,10 +23,12 @@ test('detail tags use the spoiler level of each novel association and sit before
                         id,
                         title: id === 'v17' ? 'First story' : 'Second story',
                         image: null,
-                        tags: associationTags.map((tag) => ({
-                            ...tag,
-                            spoiler: id === 'v18' ? (tag.id === 'g96' ? 0 : 2) : tag.spoiler,
-                        })),
+                        tags: associationTags.map((tag) => {
+                            if (id !== 'v18') {
+                                return tag;
+                            }
+                            return { ...tag, spoiler: tag.id === 'g96' ? 0 : 2 };
+                        }),
                     },
                 ],
                 more: false,
@@ -56,7 +60,7 @@ for (const mobile of [false, true]) {
         test('a displayed tag immediately replaces every prior Catalog condition with defaults', async ({
             page,
         }) => {
-            const catalogQueries: any[] = [];
+            const catalogQueries: IVndbQuery[] = [];
             await page.route('https://api.vndb.org/kana/vn', (route) => {
                 const query = route.request().postDataJSON();
                 const detail = query.fields.includes('description');

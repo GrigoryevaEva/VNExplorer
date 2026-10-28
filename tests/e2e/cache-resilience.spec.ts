@@ -53,7 +53,7 @@ test('an invalid response is a retriable error even with an expired successful c
 test('Catalog expires after five minutes and identifies an older fallback during a temporary outage', async ({
     page,
 }) => {
-    await page.clock.install({ time: new Date('2026-10-27T10:00:00Z') });
+    await page.clock.setFixedTime(new Date('2026-10-27T10:00:00Z'));
     let requests = 0;
     let unavailable = false;
     await page.route('https://api.vndb.org/kana/vn', (route) => {
@@ -64,12 +64,12 @@ test('Catalog expires after five minutes and identifies an older fallback during
     });
     await page.goto('/');
     await expect(page.getByRole('heading', { name: novel.title })).toBeVisible();
-    await page.clock.fastForward(298_000);
+    await page.clock.setFixedTime(new Date('2026-10-27T10:04:59Z'));
     await page.reload();
     await expect(page.getByRole('heading', { name: novel.title })).toBeVisible();
     expect(requests).toBe(1);
     unavailable = true;
-    await page.clock.fastForward(3_000);
+    await page.clock.setFixedTime(new Date('2026-10-27T10:05:01Z'));
     await page.reload();
     await expect(page.getByRole('heading', { name: novel.title })).toBeVisible();
     await expect(

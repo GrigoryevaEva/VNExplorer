@@ -15,6 +15,67 @@ const novel = {
         'A [b]strange[/b] world.\n\nVisit [url=https://example.org/story]the source[/url].',
 };
 
+test('a late response for an abandoned story cannot replace the newly opened story', async ({
+    page,
+}) => {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+        release = resolve;
+    });
+    await page.route('https://api.vndb.org/kana/release', (route) =>
+        route.fulfill({ json: { results: [], more: false } }));
+    await page.route('https://api.vndb.org/kana/vn', async (route) => {
+        const query = route.request().postDataJSON();
+        if (!query.fields.includes('description')) {
+            return route.fulfill({
+                json: {
+                    results: [
+                        { ...novel, id: 'v613', title: 'Earlier story' },
+                        { ...novel, id: 'v614', title: 'Latest story' },
+                    ],
+                    more: false,
+                    count: 2,
+                },
+            });
+        }
+        const id = query.filters[2];
+        if (id === 'v613') {
+            await gate;
+        }
+        return route.fulfill({
+            json: {
+                results: [
+                    { ...novel, id, title: id === 'v613' ? 'Earlier story' : 'Latest story' },
+                ],
+                more: false,
+            },
+        });
+    });
+    await page.goto('/');
+    await page.getByRole('link', { name: 'Earlier story', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('Opening the story');
+    await page.getByRole('link', { name: '← Catalog', exact: true }).click();
+    await page.getByRole('link', { name: 'Latest story', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Latest story', level: 1 })).toBeVisible();
+    const lateResponse = page.waitForResponse((response) => {
+        if (response.url() !== 'https://api.vndb.org/kana/vn') {
+            return false;
+        }
+        return response.request().postDataJSON().filters[2] === 'v613';
+    });
+    release();
+    await (await lateResponse).finished();
+    await page.evaluate(
+        () =>
+            new Promise<void>((resolve) => {
+                requestAnimationFrame(() => resolve());
+            })
+    );
+    await expect(page.getByRole('heading', { name: 'Latest story', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Earlier story', level: 1 })).toHaveCount(0);
+    await expect(page.getByRole('alert')).toHaveCount(0);
+});
+
 test('reader opens a story from Catalog and returns with browser Back', async ({ page }) => {
     await page.route('https://api.vndb.org/kana/vn', (route) =>
         route.fulfill({ json: { results: [novel], more: false, count: 1 } }));
