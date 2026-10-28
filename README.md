@@ -21,10 +21,21 @@ npm run dev
 The development server uses port 5173. For validation:
 
 ```sh
+npm run lint
+npm run lint:styles
+npm run format:check
+npm run typecheck
+npm run test:unit
 npx playwright install chromium
 npm run test:e2e
 npm run test:static
 ```
+
+Static checks do not execute tests or modify files. Use `lint:fix`, `lint:styles:fix` and `format`
+for explicit corrections; `test:unit:watch` runs Vitest interactively. The `@/` alias resolves to
+`src/` in Vite, TypeScript and Vitest. Unit tests use Node by default; component tests opt into
+jsdom. Playwright remains a separate browser suite. See [quality and migration notes](docs/refactoring-quality.md)
+for the rules, tool ownership and temporary exceptions scheduled for removal in task 11.
 
 `test:static` typechecks and builds, then serves only generated files through a test SPA fallback. It checks `/` and a separately built `/novels/` base, direct detail/Saved links, refresh, assets and the full Catalog → detail/gallery/releases → Saved → Catalog flow. HTTP-edge fixtures make these checks deterministic. `npm run test:live` performs a small real-browser VNDB check; `npm run test:handoff-live` adds title-alias/page/count/detail evidence. Live checks depend on VNDB availability and limits; they are not part of the repeatable suite. Screenshots from static checks are written to `test-results/static-handoff/` (override with `SMOKE_ARTIFACT_DIR`).
 

@@ -1,82 +1,156 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from '@playwright/test';
 
 test.describe('short landscape tag picker', () => {
-  test.use({ hasTouch: true, viewport: { width: 390, height: 320 } })
-  test('information, include, exclude and Done remain reachable on a short phone', async ({ page }, testInfo) => {
-    await page.route('https://api.vndb.org/kana/vn', route => route.fulfill({ json: { results: [], more: false, count: 0 } }))
-    await page.route('https://api.vndb.org/kana/tag', route => route.fulfill({ json: { results: [{ id: 'g96', name: 'Romance', searchable: true, description: 'Characters grow closer over time.' }], more: false } }))
-    await page.goto('/')
-    await page.getByRole('button', { name: 'Filters', exact: true }).tap()
-    await page.getByRole('button', { name: 'Browse tags' }).tap()
-    const picker = page.getByRole('dialog', { name: 'Discover tags' })
-    await picker.getByRole('button', { name: 'All tags', exact: true }).tap()
-    const info = picker.getByRole('button', { name: 'About Romance', exact: true })
-    await info.scrollIntoViewIfNeeded()
-    await expect(info).toBeInViewport({ ratio: 1 })
-    await info.tap()
-    await expect(picker.getByText('Characters grow closer over time.')).toBeVisible()
-    await picker.getByRole('button', { name: 'Include Romance', exact: true }).tap()
-    await picker.getByRole('button', { name: 'Exclude Romance', exact: true }).tap()
-    await expect(picker.getByRole('button', { name: 'Exclude Romance', exact: true })).toHaveAttribute('aria-pressed', 'true')
-    await page.screenshot({ path: testInfo.outputPath('short-phone-tags.png') })
-    await picker.getByRole('button', { name: 'Done', exact: true }).tap()
-    await expect(picker).toHaveCount(0)
-    await expect(page.getByRole('button', { name: 'Browse tags' })).toBeFocused()
-    await expect(page).toHaveURL(/\/$/)
-  })
-})
+    test.use({ hasTouch: true, viewport: { width: 390, height: 320 } });
+    test('information, include, exclude and Done remain reachable on a short phone', async ({
+        page,
+    }, testInfo) => {
+        await page.route('https://api.vndb.org/kana/vn', (route) =>
+            route.fulfill({ json: { results: [], more: false, count: 0 } }));
+        await page.route('https://api.vndb.org/kana/tag', (route) =>
+            route.fulfill({
+                json: {
+                    results: [
+                        {
+                            id: 'g96',
+                            name: 'Romance',
+                            searchable: true,
+                            description: 'Characters grow closer over time.',
+                        },
+                    ],
+                    more: false,
+                },
+            }));
+        await page.goto('/');
+        await page.getByRole('button', { name: 'Filters', exact: true }).tap();
+        await page.getByRole('button', { name: 'Browse tags' }).tap();
+        const picker = page.getByRole('dialog', { name: 'Discover tags' });
+        await picker.getByRole('button', { name: 'All tags', exact: true }).tap();
+        const info = picker.getByRole('button', { name: 'About Romance', exact: true });
+        await info.scrollIntoViewIfNeeded();
+        await expect(info).toBeInViewport({ ratio: 1 });
+        await info.tap();
+        await expect(picker.getByText('Characters grow closer over time.')).toBeVisible();
+        await picker.getByRole('button', { name: 'Include Romance', exact: true }).tap();
+        await picker.getByRole('button', { name: 'Exclude Romance', exact: true }).tap();
+        await expect(
+            picker.getByRole('button', { name: 'Exclude Romance', exact: true })
+        ).toHaveAttribute('aria-pressed', 'true');
+        await page.screenshot({ path: testInfo.outputPath('short-phone-tags.png') });
+        await picker.getByRole('button', { name: 'Done', exact: true }).tap();
+        await expect(picker).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Browse tags' })).toBeFocused();
+        await expect(page).toHaveURL(/\/$/);
+    });
+});
 
-test('ordinary release titles show source edition kinds for the current novel and group language', async ({ page }) => {
-  const detailFields: string[] = []
-  const releases = [
-    { id: 'r1', title: 'First edition', released: '2020', minage: null, official: true, platforms: ['win'], extlinks: [], patch: false, languages: [{ lang: 'en', mtl: true }, { lang: 'ru', mtl: false }], vns: [{ id: 'v17', rtype: 'trial' }, { id: 'v18', rtype: 'complete' }] },
-    { id: 'r2', title: 'Second edition', released: '2021', minage: 0, official: false, platforms: ['lin'], extlinks: [], patch: true, languages: [{ lang: 'en', mtl: false }], vns: [{ id: 'v18', rtype: 'trial' }, { id: 'v17', rtype: 'partial' }] },
-  ]
-  await page.route('https://api.vndb.org/kana/vn', route => route.fulfill({ json: { results: [{ id: 'v17', title: 'Edition story', image: null }], more: false } }))
-  await page.route('https://api.vndb.org/kana/release', route => {
-    const query = route.request().postDataJSON()
-    if (query.fields.includes('title')) detailFields.push(query.fields)
-    return route.fulfill({ json: { results: query.fields.includes('title') ? releases : releases.map(({ id, languages }) => ({ id, languages })), more: false } })
-  })
-  await page.goto('/vn/v17')
-  await page.getByRole('button', { name: 'English · 2 releases' }).click()
-  const english = page.getByRole('region', { name: 'English releases', exact: true })
-  const first = english.getByRole('listitem').filter({ hasText: 'First edition' })
-  await expect(first.getByText('Demo', { exact: true })).toBeVisible()
-  await expect(first.getByText('Machine translation', { exact: true })).toBeVisible()
-  const second = english.getByRole('listitem').filter({ hasText: 'Second edition' })
-  await expect(second.getByText('Partial', { exact: true })).toBeVisible()
-  await expect(second.getByText('Patch', { exact: true })).toBeVisible()
-  await expect(second.getByText('Machine translation', { exact: true })).toHaveCount(0)
-  await expect(second.getByText('Demo', { exact: true })).toHaveCount(0)
-  await page.getByRole('button', { name: 'Russian · 1 release' }).click()
-  const russian = page.getByRole('region', { name: 'Russian releases', exact: true })
-  await expect(russian.getByText('Demo', { exact: true })).toBeVisible()
-  await expect(russian.getByText('Machine translation', { exact: true })).toHaveCount(0)
-  expect(detailFields).toHaveLength(1)
-  expect(detailFields[0]).toContain('languages{lang,mtl}')
-  expect(detailFields[0]).toContain('vns{id,rtype}')
-  expect(detailFields[0]).toContain('patch')
-})
+test('ordinary release titles show source edition kinds for the current novel and group language', async ({
+    page,
+}) => {
+    const detailFields: string[] = [];
+    const releases = [
+        {
+            id: 'r1',
+            title: 'First edition',
+            released: '2020',
+            minage: null,
+            official: true,
+            platforms: ['win'],
+            extlinks: [],
+            patch: false,
+            languages: [
+                { lang: 'en', mtl: true },
+                { lang: 'ru', mtl: false },
+            ],
+            vns: [
+                { id: 'v17', rtype: 'trial' },
+                { id: 'v18', rtype: 'complete' },
+            ],
+        },
+        {
+            id: 'r2',
+            title: 'Second edition',
+            released: '2021',
+            minage: 0,
+            official: false,
+            platforms: ['lin'],
+            extlinks: [],
+            patch: true,
+            languages: [{ lang: 'en', mtl: false }],
+            vns: [
+                { id: 'v18', rtype: 'trial' },
+                { id: 'v17', rtype: 'partial' },
+            ],
+        },
+    ];
+    await page.route('https://api.vndb.org/kana/vn', (route) =>
+        route.fulfill({
+            json: { results: [{ id: 'v17', title: 'Edition story', image: null }], more: false },
+        }));
+    await page.route('https://api.vndb.org/kana/release', (route) => {
+        const query = route.request().postDataJSON();
+        if (query.fields.includes('title')) detailFields.push(query.fields);
+        return route.fulfill({
+            json: {
+                results: query.fields.includes('title')
+                    ? releases
+                    : releases.map(({ id, languages }) => ({ id, languages })),
+                more: false,
+            },
+        });
+    });
+    await page.goto('/vn/v17');
+    await page.getByRole('button', { name: 'English · 2 releases' }).click();
+    const english = page.getByRole('region', { name: 'English releases', exact: true });
+    const first = english.getByRole('listitem').filter({ hasText: 'First edition' });
+    await expect(first.getByText('Demo', { exact: true })).toBeVisible();
+    await expect(first.getByText('Machine translation', { exact: true })).toBeVisible();
+    const second = english.getByRole('listitem').filter({ hasText: 'Second edition' });
+    await expect(second.getByText('Partial', { exact: true })).toBeVisible();
+    await expect(second.getByText('Patch', { exact: true })).toBeVisible();
+    await expect(second.getByText('Machine translation', { exact: true })).toHaveCount(0);
+    await expect(second.getByText('Demo', { exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Russian · 1 release' }).click();
+    const russian = page.getByRole('region', { name: 'Russian releases', exact: true });
+    await expect(russian.getByText('Demo', { exact: true })).toBeVisible();
+    await expect(russian.getByText('Machine translation', { exact: true })).toHaveCount(0);
+    expect(detailFields).toHaveLength(1);
+    expect(detailFields[0]).toContain('languages{lang,mtl}');
+    expect(detailFields[0]).toContain('vns{id,rtype}');
+    expect(detailFields[0]).toContain('patch');
+});
 
 test.describe('narrow phone removal notice', () => {
-  test.use({ hasTouch: true, viewport: { width: 320, height: 740 } })
-  test('long-title Undo remains readable and leaves Catalog pagination usable', async ({ page }, testInfo) => {
-    const title = 'AnExtraordinarilyLongVisualNovelTitle'.repeat(5)
-    await page.route('https://api.vndb.org/kana/vn', route => route.fulfill({ json: { results: [{ id: 'v1', title, image: null }], more: true, count: 48 } }))
-    await page.goto('/')
-    await page.getByRole('button', { name: `Save ${title}`, exact: true }).tap()
-    await page.getByRole('button', { name: `Saved ${title}`, exact: true }).tap()
-    const notice = page.getByRole('status').filter({ hasText: 'Removed' })
-    await expect(notice.getByRole('button', { name: 'Undo', exact: true })).toBeInViewport({ ratio: 1 })
-    const noticeBox = await notice.boundingBox()
-    const pagesBox = await page.getByRole('navigation', { name: 'Catalog pages' }).boundingBox()
-    expect(noticeBox!.x).toBeGreaterThanOrEqual(0)
-    expect(noticeBox!.x + noticeBox!.width).toBeLessThanOrEqual(320)
-    expect(noticeBox!.y + noticeBox!.height).toBeLessThanOrEqual(pagesBox!.y)
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-    await page.screenshot({ path: testInfo.outputPath('long-title-undo.png') })
-    await notice.getByRole('button', { name: 'Undo', exact: true }).tap()
-    await expect(page.getByRole('button', { name: `Saved ${title}`, exact: true })).toBeVisible()
-  })
-})
+    test.use({ hasTouch: true, viewport: { width: 320, height: 740 } });
+    test('long-title Undo remains readable and leaves Catalog pagination usable', async ({
+        page,
+    }, testInfo) => {
+        const title = 'AnExtraordinarilyLongVisualNovelTitle'.repeat(5);
+        await page.route('https://api.vndb.org/kana/vn', (route) =>
+            route.fulfill({
+                json: { results: [{ id: 'v1', title, image: null }], more: true, count: 48 },
+            }));
+        await page.goto('/');
+        await page.getByRole('button', { name: `Save ${title}`, exact: true }).tap();
+        await page.getByRole('button', { name: `Saved ${title}`, exact: true }).tap();
+        const notice = page.getByRole('status').filter({ hasText: 'Removed' });
+        await expect(notice.getByRole('button', { name: 'Undo', exact: true })).toBeInViewport({
+            ratio: 1,
+        });
+        const noticeBox = await notice.boundingBox();
+        const pagesBox = await page
+            .getByRole('navigation', { name: 'Catalog pages' })
+            .boundingBox();
+        expect(noticeBox!.x).toBeGreaterThanOrEqual(0);
+        expect(noticeBox!.x + noticeBox!.width).toBeLessThanOrEqual(320);
+        expect(noticeBox!.y + noticeBox!.height).toBeLessThanOrEqual(pagesBox!.y);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+            true
+        );
+        await page.screenshot({ path: testInfo.outputPath('long-title-undo.png') });
+        await notice.getByRole('button', { name: 'Undo', exact: true }).tap();
+        await expect(
+            page.getByRole('button', { name: `Saved ${title}`, exact: true })
+        ).toBeVisible();
+    });
+});
