@@ -38,6 +38,8 @@ dist-ssr
 /docs/product-design.md
 /docs/architecture.md
 /docs/adr/
+/docs/archive/
+/docs/refactoring-plan.md
 
 # Browser test artifacts
 /playwright-report/
