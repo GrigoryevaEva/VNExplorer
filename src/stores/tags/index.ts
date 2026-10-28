@@ -1,0 +1,1 @@
+export { useTagsStore } from './store';

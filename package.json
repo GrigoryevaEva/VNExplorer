@@ -26,7 +26,9 @@
         "test:unit:watch": "vitest"
     },
     "dependencies": {
+        "@vueuse/core": "^15.0.0",
         "axios": "^1.21.0",
+        "pinia": "^4.1.0",
         "vue": "^3.5.44",
         "vue-router": "^5.4.0",
         "zod": "^4.6.7"

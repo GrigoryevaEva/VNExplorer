@@ -1,13 +1,14 @@
+import { storeToRefs } from 'pinia';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { fetchCatalogSelection, fetchTitleMatchCount, needsTitleMatchCount } from '@/api/catalog';
 import { isVndbCancellation } from '@/api/client';
 import { vndbRequestMessage } from '@/components/vndb-feedback';
-import type { ICatalogSelection } from '@/entities/catalog';
-import { CATALOG_PAGE_SIZE } from '@/entities/catalog';
+import type { ICatalogSelection, TCatalogTagAction } from '@/entities/catalog';
+import { CATALOG_PAGE_SIZE, toggleCatalogTag } from '@/entities/catalog';
 import type { IVisualNovelCard } from '@/entities/visual-novel';
-import { loadTagDirectory } from '@/modules/tags/directory';
+import { useTagsStore } from '@/stores/tags';
 
 import { TITLE_MATCH_ERROR_MESSAGE } from './constants';
 import { selectionFromQuery, selectionToQuery } from './route';
@@ -29,7 +30,9 @@ export const useCatalog = () => {
 
     const draftStrict = ref(applied.value.strictMatch);
 
-    const tagNames = ref<Record<string, string>>({});
+    const tagsStore = useTagsStore();
+    const { tags } = storeToRefs(tagsStore);
+    const { loadDirectory: readTagNames } = tagsStore;
 
     const draftLanguage = ref(applied.value.language);
 
@@ -101,25 +104,17 @@ export const useCatalog = () => {
         return 'All languages';
     });
 
-    const selectTag = (id: string, action: 'include' | 'exclude') => {
-        const active = (action === 'include' ? draftIncluded : draftExcluded).value.includes(id);
-        draftIncluded.value = draftIncluded.value.filter((tag) => tag !== id);
-        draftExcluded.value = draftExcluded.value.filter((tag) => tag !== id);
-        if (!active) {
-            (action === 'include' ? draftIncluded : draftExcluded).value.push(id);
-        }
+    const selectTag = (id: string, action: TCatalogTagAction) => {
+        const next = toggleCatalogTag(
+            { includedTags: draftIncluded.value, excludedTags: draftExcluded.value },
+            id,
+            action
+        );
+        draftIncluded.value = next.includedTags;
+        draftExcluded.value = next.excludedTags;
     };
 
-    const tagName = (id: string) => tagNames.value[id] ?? id;
-
-    const readTagNames = async () => {
-        try {
-            const tags = await loadTagDirectory(() => {});
-            tagNames.value = Object.fromEntries(tags.map((tag) => [tag.id, tag.name]));
-        } catch {
-            /* The picker exposes retry if loading fails. */
-        }
-    };
+    const tagName = (id: string) => tags.value.find((tag) => tag.id === id)?.name ?? id;
 
     const closeFilters = () => {
         filterDialog.value?.close();
