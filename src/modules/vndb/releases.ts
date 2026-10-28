@@ -36,8 +36,12 @@ export async function fetchReleaseDirectory(
             },
             { signal, onStale }
         );
-        for (const release of response.results) releases.set(release.id, release);
-        if (!response.more) return [...releases.values()];
+        for (const release of response.results) {
+            releases.set(release.id, release);
+        }
+        if (!response.more) {
+            return [...releases.values()];
+        }
     }
 }
 
@@ -64,7 +68,9 @@ export async function fetchReleaseDetails(
     const freshIds = new Set(fresh.map((record) => record.id));
     const missing = ids.filter((id) => !freshIds.has(id));
     const rows = fresh.flatMap((record) => record.response!.data.results as ReleaseDetails[]);
-    if (!missing.length) return rows;
+    if (!missing.length) {
+        return rows;
+    }
     try {
         const response = await queryVndb<ReleaseDetails>(
             'release',
@@ -79,7 +85,7 @@ export async function fetchReleaseDetails(
             { signal, onStale }
         );
         const releases = response.results.filter((release) => missing.includes(release.id));
-        if (!response.stale)
+        if (!response.stale) {
             await Promise.all(
                 releases.map((release) =>
                     writeResponse(
@@ -88,22 +94,31 @@ export async function fetchReleaseDetails(
                         response.fetchedAt
                     ))
             );
+        }
         signal?.throwIfAborted();
         return [...rows, ...releases];
     } catch (error) {
         const older = cached
             .filter((record) => !freshIds.has(record.id))
             .flatMap((record) => (record.response?.data.results as ReleaseDetails[]) ?? []);
-        if (!isTemporaryVndbError(error) || (!older.length && !rows.length)) throw error;
-        if (older.length) onStale?.();
+        if (!isTemporaryVndbError(error) || (!older.length && !rows.length)) {
+            throw error;
+        }
+        if (older.length) {
+            onStale?.();
+        }
         return [...rows, ...older];
     }
 }
 
 export function releaseWebsites(release: ReleaseDetails) {
     return (release.extlinks ?? []).filter((link, index, links) => {
-        if (link.name !== 'website' || links.findIndex((other) => other.url === link.url) !== index)
+        if (
+            link.name !== 'website' ||
+            links.findIndex((other) => other.url === link.url) !== index
+        ) {
             return false;
+        }
         try {
             return ['http:', 'https:'].includes(new URL(link.url).protocol);
         } catch {
@@ -138,7 +153,9 @@ export function newestReleases(releases: ReleaseDetails[]) {
     );
 }
 export function isPlanned(value: string | null): boolean {
-    if (value === 'TBA') return true;
+    if (value === 'TBA') {
+        return true;
+    }
     const key = dateKey(value);
     return !!key && key > new Date().toISOString().slice(0, 10);
 }

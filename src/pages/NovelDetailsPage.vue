@@ -2,6 +2,8 @@
     import { computed, onBeforeUnmount, ref, watch } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
 
+    import { vndbRequestMessage } from '@/components/vndb-feedback';
+
     import { selectionFromQuery, selectionToQuery } from '../modules/catalog/selection';
     import {
         alternativeTitles,
@@ -56,14 +58,21 @@
         loading.value = true;
         try {
             const result = await fetchNovelDetails(id, request.signal, () => {
-                if (!request.signal.aborted) stale.value = true;
+                if (!request.signal.aborted) {
+                    stale.value = true;
+                }
             });
-            if (!request.signal.aborted) novel.value = result;
+            if (!request.signal.aborted) {
+                novel.value = result;
+            }
         } catch (reason) {
-            if (!request.signal.aborted)
-                error.value = reason instanceof Error ? reason.message : 'Please try again.';
+            if (!request.signal.aborted) {
+                error.value = vndbRequestMessage(reason);
+            }
         } finally {
-            if (!request.signal.aborted) loading.value = false;
+            if (!request.signal.aborted) {
+                loading.value = false;
+            }
         }
     }
     watch(() => route.params.id, load, { immediate: true });

@@ -15,8 +15,6 @@ const legacyFiles = [
     'src/modules/catalog/selection.ts',
     'src/modules/saved/collection.ts',
     'src/modules/tags/directory.ts',
-    'src/modules/vndb/cache.ts',
-    'src/modules/vndb/client.ts',
     'src/modules/vndb/details.ts',
     'src/modules/vndb/format.ts',
     'src/modules/vndb/releases.ts',
@@ -165,6 +163,8 @@ export default ts.config(
         files: ['tests/e2e/detail-tags.spec.ts'],
         rules: { 'no-nested-ternary': 'off' },
     },
-    // Formatting conflicts must be disabled after all presets and overrides.
-    prettier
+    // Disable formatting conflicts after all presets and overrides. Re-enable
+    // the compatible all-braces convention (Prettier's preset disables curly).
+    prettier,
+    { rules: { curly: ['error', 'all'] } }
 );

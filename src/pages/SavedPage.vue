@@ -18,7 +18,9 @@
     const stale = ref(false);
     const request = new AbortController();
     async function refresh() {
-        if (!savedNovels.value.length) return;
+        if (!savedNovels.value.length) {
+            return;
+        }
         refreshing.value = true;
         refreshError.value = false;
         stale.value = false;
@@ -30,9 +32,13 @@
                     stale.value = true;
                 }
             );
-            if (!request.signal.aborted && !stale.value) updateSavedSnapshots(cards);
+            if (!request.signal.aborted && !stale.value) {
+                updateSavedSnapshots(cards);
+            }
         } catch {
-            if (!request.signal.aborted) refreshError.value = true;
+            if (!request.signal.aborted) {
+                refreshError.value = true;
+            }
         } finally {
             refreshing.value = false;
         }

@@ -43,11 +43,13 @@ function read() {
                     typeof entry.novel.title !== 'string' ||
                     !Number.isFinite(entry.addedAt)
             )
-        )
+        ) {
             throw new Error('Invalid collection');
+        }
         const unique = new Map<string, SavedEntry>();
-        for (const entry of data.entries as SavedEntry[])
+        for (const entry of data.entries as SavedEntry[]) {
             unique.set(entry.novel.id, { addedAt: entry.addedAt, novel: snapshot(entry.novel) });
+        }
         entries.value = [...unique.values()];
     } catch {
         readable = false;
@@ -57,11 +59,15 @@ function read() {
 }
 read();
 window.addEventListener('storage', (event) => {
-    if (event.key === STORAGE_KEY || event.key === null) read();
+    if (event.key === STORAGE_KEY || event.key === null) {
+        read();
+    }
 });
 
 function persist(next: SavedEntry[]) {
-    if (!readable) return false;
+    if (!readable) {
+        return false;
+    }
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, entries: next }));
         entries.value = next;
@@ -84,7 +90,9 @@ export function toggleSaved(novel: VisualNovelCard) {
         persist([...entries.value, { addedAt: Date.now(), novel: snapshot(novel) }]);
         return;
     }
-    if (!persist(entries.value.filter((entry) => entry.novel.id !== novel.id))) return;
+    if (!persist(entries.value.filter((entry) => entry.novel.id !== novel.id))) {
+        return;
+    }
     clearTimeout(undoTimer);
     removedEntry.value = existing;
     undoTimer = setTimeout(() => {
@@ -93,8 +101,12 @@ export function toggleSaved(novel: VisualNovelCard) {
 }
 export function undoRemoval() {
     const entry = removedEntry.value;
-    if (!entry) return;
-    if (!isSaved(entry.novel.id) && !persist([...entries.value, entry])) return;
+    if (!entry) {
+        return;
+    }
+    if (!isSaved(entry.novel.id) && !persist([...entries.value, entry])) {
+        return;
+    }
     clearTimeout(undoTimer);
     removedEntry.value = null;
 }
@@ -104,8 +116,9 @@ export function selectSaved(search: string, sort: SavedSort): VisualNovelCard[] 
         .filter((entry) => entry.novel.title.toLocaleLowerCase('en').includes(text))
         .slice()
         .sort((a, b) => {
-            if (sort === 'rating')
+            if (sort === 'rating') {
                 return (b.novel.rating ?? -1) - (a.novel.rating ?? -1) || b.addedAt - a.addedAt;
+            }
             if (sort === 'released') {
                 const date = (value: string | null) =>
                     value && /^\d{4}(?:-\d{2}){0,2}$/.test(value) ? value : '';
@@ -124,5 +137,7 @@ export function updateSavedSnapshots(novels: VisualNovelCard[]) {
         ...entry,
         novel: byId.has(entry.novel.id) ? snapshot(byId.get(entry.novel.id)!) : entry.novel,
     }));
-    if (JSON.stringify(next) !== JSON.stringify(entries.value)) persist(next);
+    if (JSON.stringify(next) !== JSON.stringify(entries.value)) {
+        persist(next);
+    }
 }

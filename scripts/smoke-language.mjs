@@ -18,7 +18,9 @@ try {
         } catch {
             /* Wait for Vite. */
         }
-        if (ready) break;
+        if (ready) {
+            break;
+        }
         await new Promise((resolve) => setTimeout(resolve, 250));
     }
     assert(ready, 'Vite started');
@@ -59,7 +61,9 @@ try {
                     results: 100,
                 }),
             });
-            if (!response.ok) throw new Error(`Release API HTTP ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`Release API HTTP ${response.status}`);
+            }
             return response.json();
         }, id);
         assert(

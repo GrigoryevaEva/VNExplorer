@@ -11,7 +11,9 @@ function safeUrl(value: string): string | null {
 
 // Build Vue nodes from the small source BBCode vocabulary. Source HTML is always text.
 function inline(source: string, depth = 0): VNodeChild[] {
-    if (depth > 30) return [source];
+    if (depth > 30) {
+        return [source];
+    }
     const nodes: VNodeChild[] = [];
     const tags = /\[(b|i|u|s|url|quote|spoiler|raw|code)(?:=([^\]\r\n]*))?\]/gi;
     let cursor = 0;
@@ -20,7 +22,9 @@ function inline(source: string, depth = 0): VNodeChild[] {
         const closing = `[/${name}]`;
         // Match the corresponding closing tag, including same-tag nesting.
         let end = source.toLowerCase().indexOf(closing, tags.lastIndex);
-        if (end < 0) continue;
+        if (end < 0) {
+            continue;
+        }
         if (!['raw', 'code'].includes(name)) {
             const nested = new RegExp(`\\[(/?)${name}(?:=[^\\]]*)?\\]`, 'gi');
             nested.lastIndex = tags.lastIndex;
@@ -72,7 +76,9 @@ function inline(source: string, depth = 0): VNodeChild[] {
 function plain(source: string): VNodeChild[] {
     return source.split(/(https?:\/\/[^\s<>[\]]+)/g).flatMap((part) => {
         const href = /^https?:\/\//.test(part) ? safeUrl(part) : null;
-        if (href) return [h('a', { href, rel: 'noopener noreferrer' }, part)];
+        if (href) {
+            return [h('a', { href, rel: 'noopener noreferrer' }, part)];
+        }
         // Paragraph presentation belongs to text nodes after paired formatting has
         // been recognized. A break inside bold/link/spoiler content must not split
         // its source delimiters or reveal the contents of a closed disclosure.

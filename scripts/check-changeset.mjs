@@ -2,8 +2,9 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 const base = process.argv[2];
-if (!base || base.startsWith('-'))
+if (!base || base.startsWith('-')) {
     throw new Error('Usage: npm run changeset:check -- <base-revision>');
+}
 const git = (...args) =>
     execFileSync('git', ['-c', `safe.directory=${process.cwd()}`, ...args], {
         encoding: 'utf8',

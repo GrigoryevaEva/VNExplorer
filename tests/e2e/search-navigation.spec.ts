@@ -92,8 +92,12 @@ test('latest selection wins when earlier responses arrive late and errors differ
     await page.route('https://api.vndb.org/kana/vn', async (route) => {
         const query = route.request().postDataJSON();
         const search = query.filters[2];
-        if (search === 'old') await oldGate;
-        if (search === 'failure') return route.fulfill({ status: 503, json: {} });
+        if (search === 'old') {
+            await oldGate;
+        }
+        if (search === 'failure') {
+            return route.fulfill({ status: 503, json: {} });
+        }
         await route.fulfill({
             json: {
                 results:

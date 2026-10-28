@@ -60,7 +60,9 @@ for (const mobile of [false, true]) {
             await page.route('https://api.vndb.org/kana/vn', (route) => {
                 const query = route.request().postDataJSON();
                 const detail = query.fields.includes('description');
-                if (!detail) catalogQueries.push(query);
+                if (!detail) {
+                    catalogQueries.push(query);
+                }
                 return route.fulfill({
                     json: {
                         results: [
@@ -92,8 +94,9 @@ for (const mobile of [false, true]) {
             const tag = page
                 .getByRole('region', { name: 'Spoiler-free tags', exact: true })
                 .getByRole('link', { name: 'Fantasy', exact: true });
-            if (mobile) await tag.tap();
-            else {
+            if (mobile) {
+                await tag.tap();
+            } else {
                 await tag.focus();
                 await page.keyboard.press('Enter');
             }
@@ -112,7 +115,9 @@ for (const mobile of [false, true]) {
             await expect(page.getByRole('combobox', { name: 'Sort stories' })).toHaveValue(
                 'rating'
             );
-            if (mobile) await page.getByRole('button', { name: 'Filters', exact: true }).tap();
+            if (mobile) {
+                await page.getByRole('button', { name: 'Filters', exact: true }).tap();
+            }
             await expect(page.getByRole('radio', { name: 'All', exact: true })).toBeChecked();
             await expect(page.getByRole('checkbox', { name: 'Strict match' })).toBeChecked();
             await expect(
@@ -124,7 +129,9 @@ for (const mobile of [false, true]) {
             await expect(
                 page.getByRole('button', { name: 'Remove excluded tag Violence' })
             ).toHaveCount(0);
-            if (mobile) await page.keyboard.press('Escape');
+            if (mobile) {
+                await page.keyboard.press('Escape');
+            }
             await page.goBack();
             await expect(
                 page.getByRole('heading', { name: 'A fantasy story', level: 1 })

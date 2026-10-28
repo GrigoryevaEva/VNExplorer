@@ -43,7 +43,9 @@ test('Saved searches and sorts locally while preserving added order after reload
 }) => {
     const requests: unknown[] = [];
     page.on('request', (request) => {
-        if (request.url().startsWith('https://api.vndb.org/')) requests.push(request.url());
+        if (request.url().startsWith('https://api.vndb.org/')) {
+            requests.push(request.url());
+        }
     });
     await page.goto('/');
     for (const novel of novels) {
@@ -197,8 +199,9 @@ test('Undo expires and unknown release dates sort after known publication dates'
             },
         }));
     await page.goto('/');
-    for (const novel of novels)
+    for (const novel of novels) {
         await page.getByRole('button', { name: `Save ${novel.title}`, exact: true }).click();
+    }
     await page.getByRole('link', { name: 'Saved', exact: true }).click();
     await page.getByLabel('Sort saved stories').selectOption('released');
     await expect(

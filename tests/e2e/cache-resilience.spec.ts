@@ -19,6 +19,37 @@ test('fresh Catalog responses survive reload without another API request', async
     expect(requests).toBe(1);
 });
 
+test('an invalid response is a retriable error even with an expired successful cache', async ({
+    page,
+}) => {
+    await page.clock.setFixedTime(new Date('2026-10-28T10:00:00Z'));
+    let invalid = false;
+    let requests = 0;
+    await page.route('https://api.vndb.org/kana/vn', (route) => {
+        requests++;
+        return route.fulfill({
+            json: invalid
+                ? { results: null, more: false }
+                : { results: [novel], more: false, count: 1 },
+        });
+    });
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: novel.title })).toBeVisible();
+    await page.clock.setFixedTime(new Date('2026-10-28T10:05:01Z'));
+    invalid = true;
+    await page.reload();
+
+    await expect(page.getByRole('alert')).toContainText('VNDB returned an unexpected response.');
+    await expect(page.getByText('No stories here yet.')).toHaveCount(0);
+    await expect(
+        page.getByText('Showing older cached data. VNDB could not be reached.')
+    ).toHaveCount(0);
+    invalid = false;
+    await page.getByRole('button', { name: 'Try again' }).click();
+    await expect(page.getByRole('heading', { name: novel.title })).toBeVisible();
+    expect(requests).toBe(3);
+});
+
 test('Catalog expires after five minutes and identifies an older fallback during a temporary outage', async ({
     page,
 }) => {
@@ -262,12 +293,13 @@ test('Saved identifies stale refreshes and remains readable after disposable cac
         page.getByText('Showing older cached data. VNDB could not be reached.')
     ).toBeVisible();
     await page.evaluate(async () => {
-        for (const database of await indexedDB.databases())
+        for (const database of await indexedDB.databases()) {
             await new Promise<void>((resolve, reject) => {
                 const deletion = indexedDB.deleteDatabase(database.name!);
                 deletion.onsuccess = () => resolve();
                 deletion.onerror = () => reject(deletion.error);
             });
+        }
     });
     await page.reload();
     await expect(page.getByRole('heading', { name: novel.title })).toBeVisible();
@@ -287,7 +319,7 @@ test('multilingual release records are reused across reload and differently size
         route.fulfill({ json: { results: [{ ...novel, screenshots: [] }], more: false } }));
     await page.route('https://api.vndb.org/kana/release', (route) => {
         const body = route.request().postDataJSON();
-        if (!body.fields.includes('title'))
+        if (!body.fields.includes('title')) {
             return route.fulfill({
                 json: {
                     results: [
@@ -297,6 +329,7 @@ test('multilingual release records are reused across reload and differently size
                     more: false,
                 },
             });
+        }
         details++;
         const ids: string[] =
             body.filters[0] === 'id'
@@ -421,10 +454,11 @@ test('an incomplete release batch stays retriable instead of becoming a cached e
         route.fulfill({ json: { results: [{ ...novel, screenshots: [] }], more: false } }));
     await page.route('https://api.vndb.org/kana/release', (route) => {
         const body = route.request().postDataJSON();
-        if (!body.fields.includes('title'))
+        if (!body.fields.includes('title')) {
             return route.fulfill({
                 json: { results: [{ id: 'r1', languages: [{ lang: 'en' }] }], more: false },
             });
+        }
         attempts++;
         return route.fulfill({
             json: {
@@ -488,7 +522,7 @@ test('a failed uncached release preserves fresh shared records and retries only 
         route.fulfill({ json: { results: [{ ...novel, screenshots: [] }], more: false } }));
     await page.route('https://api.vndb.org/kana/release', (route) => {
         const body = route.request().postDataJSON();
-        if (!body.fields.includes('title'))
+        if (!body.fields.includes('title')) {
             return route.fulfill({
                 json: {
                     results: [
@@ -498,6 +532,7 @@ test('a failed uncached release preserves fresh shared records and retries only 
                     more: false,
                 },
             });
+        }
         const ids: string[] =
             body.filters[0] === 'id'
                 ? [body.filters[2]]

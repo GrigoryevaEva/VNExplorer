@@ -54,17 +54,22 @@ export function selectionWithoutFilters(selection: CatalogSelection): CatalogSel
 }
 export function compileCatalogQuery(selection: CatalogSelection): VndbQuery {
     const conditions: unknown[][] = [];
-    if (selection.search) conditions.push(['search', '=', selection.search]);
+    if (selection.search) {
+        conditions.push(['search', '=', selection.search]);
+    }
     const inclusions = selection.includedTags.map((id) => ['tag', '=', [id, 0, 0]]);
-    if (inclusions.length)
+    if (inclusions.length) {
         conditions.push(
             inclusions.length === 1
                 ? inclusions[0]!
                 : [selection.strictMatch ? 'and' : 'or', ...inclusions]
         );
-    for (const id of selection.excludedTags) conditions.push(['tag', '!=', [id, 0, 0]]);
+    }
+    for (const id of selection.excludedTags) {
+        conditions.push(['tag', '!=', [id, 0, 0]]);
+    }
     // One release must satisfy both language and publication, including demos and partial translations.
-    if (selection.language !== 'all')
+    if (selection.language !== 'all') {
         conditions.push([
             'release',
             '=',
@@ -75,6 +80,7 @@ export function compileCatalogQuery(selection: CatalogSelection): VndbQuery {
                 ['released', '!=', 'unknown'],
             ],
         ]);
+    }
     return {
         filters: conditions.length > 1 ? ['and', ...conditions] : (conditions[0] ?? []),
         fields: CARD_FIELDS,

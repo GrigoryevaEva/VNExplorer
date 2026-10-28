@@ -2,6 +2,9 @@
     import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
 
+    import { isVndbCancellation } from '@/api/client';
+    import { vndbRequestMessage } from '@/components/vndb-feedback';
+
     import { fetchTitleMatchCount, needsTitleMatchCount } from '../modules/catalog/emptySearch';
     import {
         CATALOG_PAGE_SIZE,
@@ -17,6 +20,7 @@
     import LanguageFilter from '../ui/LanguageFilter.vue';
     import NovelCard from '../ui/NovelCard.vue';
     import TagPicker from '../ui/TagPicker.vue';
+    const TITLE_MATCH_ERROR_MESSAGE = 'Could not check title matches. Please try again.';
     const tagsOpen = ref(false);
     const route = useRoute();
     const router = useRouter();
@@ -29,7 +33,9 @@
         const active = (action === 'include' ? draftIncluded : draftExcluded).value.includes(id);
         draftIncluded.value = draftIncluded.value.filter((tag) => tag !== id);
         draftExcluded.value = draftExcluded.value.filter((tag) => tag !== id);
-        if (!active) (action === 'include' ? draftIncluded : draftExcluded).value.push(id);
+        if (!active) {
+            (action === 'include' ? draftIncluded : draftExcluded).value.push(id);
+        }
     }
     const tagNames = ref<Record<string, string>>({});
     const tagName = (id: string) => tagNames.value[id] ?? id;
@@ -44,7 +50,9 @@
     watch(
         () => [...draftIncluded.value, ...draftExcluded.value].join(),
         (ids) => {
-            if (ids) void readTagNames();
+            if (ids) {
+                void readTagNames();
+            }
         },
         { immediate: true }
     );
@@ -125,6 +133,7 @@
         controller = new AbortController();
         const selection = { ...applied.value };
         const scroll = Number(window.history.state?.catalogScroll ?? 0);
+        let checkingTitleMatches = false;
         loading.value = true;
         error.value = '';
         stale.value = false;
@@ -133,38 +142,46 @@
             const response = await fetchCatalogSelection(selection, {
                 signal: controller.signal,
                 onStale: () => {
-                    if (request === generation) stale.value = true;
+                    if (request === generation) {
+                        stale.value = true;
+                    }
                 },
             });
-            if (request !== generation) return;
+            if (request !== generation) {
+                return;
+            }
             novels.value = response.results;
             count.value = response.count;
             more.value = response.more;
             if (!response.results.length && needsTitleMatchCount(selection)) {
+                checkingTitleMatches = true;
                 const matches = await fetchTitleMatchCount(selection.search, {
                     signal: controller.signal,
                     onStale: () => {
-                        if (request === generation) stale.value = true;
+                        if (request === generation) {
+                            stale.value = true;
+                        }
                     },
                 });
-                if (request !== generation) return;
+                if (request !== generation) {
+                    return;
+                }
                 titleMatchCount.value = matches;
             }
         } catch (reason) {
-            if (
-                request !== generation ||
-                (reason instanceof DOMException && reason.name === 'AbortError')
-            )
+            if (request !== generation || isVndbCancellation(reason)) {
                 return;
-            error.value =
-                reason instanceof Error
-                    ? reason.message
-                    : 'Stories could not be loaded. Please try again.';
+            }
+            error.value = checkingTitleMatches
+                ? TITLE_MATCH_ERROR_MESSAGE
+                : vndbRequestMessage(reason);
         } finally {
             if (request === generation) {
                 loading.value = false;
                 await nextTick();
-                if (grid.value) grid.value.scrollTop = scroll;
+                if (grid.value) {
+                    grid.value.scrollTop = scroll;
+                }
             }
         }
     }

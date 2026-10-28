@@ -18,7 +18,9 @@ let browser;
 try {
     for (let attempt = 0; attempt < 40; attempt++) {
         try {
-            if ((await fetch(base)).ok) break;
+            if ((await fetch(base)).ok) {
+                break;
+            }
         } catch {
             // The dev server may still be starting; retry until the bounded deadline.
         }
@@ -39,8 +41,9 @@ try {
             error: body.error,
         })
     );
-    if (!response.ok() || !body.results.some((vn) => vn.id === 'v2002'))
+    if (!response.ok() || !body.results.some((vn) => vn.id === 'v2002')) {
         throw new Error('Alias search did not return Steins;Gate');
+    }
     const pages = await page.evaluate(async () => {
         const output = [];
         for (const page of [1, 2]) {
@@ -65,8 +68,9 @@ try {
         pages.some((result) => result.status !== 200 || !result.more) ||
         pages[0].count !== pages[1].count ||
         pages[0].results[0].id === pages[1].results[0].id
-    )
+    ) {
         throw new Error('Unexpected page/count semantics');
+    }
     await page.screenshot({ path: 'test-results/ticket02-live-desktop.png' });
     console.log(
         JSON.stringify(

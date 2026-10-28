@@ -26,13 +26,17 @@ let browser;
 try {
     let ready = false;
     for (let i = 0; i < 120; i++) {
-        if (server.exitCode !== null) throw new Error(`Local server exited: ${serverLog}`);
+        if (server.exitCode !== null) {
+            throw new Error(`Local server exited: ${serverLog}`);
+        }
         try {
             ready = (await fetch(origin)).ok;
         } catch {
             /* Local development server startup. */
         }
-        if (ready) break;
+        if (ready) {
+            break;
+        }
         await new Promise((resolve) => setTimeout(resolve, 250));
     }
     assert(ready, `Local app started: ${serverLog}`);
@@ -40,7 +44,9 @@ try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     let apiRequests = 0;
     page.on('request', (request) => {
-        if (request.url().startsWith('https://api.vndb.org/kana/')) apiRequests++;
+        if (request.url().startsWith('https://api.vndb.org/kana/')) {
+            apiRequests++;
+        }
     });
     const nextVn = () =>
         page.waitForResponse(
@@ -59,7 +65,7 @@ try {
         page.getByRole('heading', { name: catalog.results[0].title, exact: true })
     ).toBeVisible();
     for (const novel of catalog.results.slice(0, 4)) {
-        if (novel.image)
+        if (novel.image) {
             await expect
                 .poll(
                     () =>
@@ -69,6 +75,7 @@ try {
                     { timeout: 20000 }
                 )
                 .toBe(true);
+        }
     }
     await page.screenshot({ path: join(artifacts, 'live-catalog-desktop.png') });
     await page.setViewportSize({ width: 390, height: 844 });
@@ -103,7 +110,9 @@ try {
                     count: true,
                 }),
             });
-            if (!response.ok) throw new Error(`VNDB page ${page}: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`VNDB page ${page}: ${response.status}`);
+            }
             pages.push(await response.json());
         }
         return pages;

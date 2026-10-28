@@ -1,0 +1,8 @@
+export const REQUEST_TIMEOUT_MS = 30_000;
+export const TRANSPORT_ERROR_CODES = {
+    CANCELLED: 'ERR_CANCELED',
+    TIMEOUT: 'ETIMEDOUT',
+    ABORTED: 'ECONNABORTED',
+    NETWORK: 'ERR_NETWORK',
+} as const;
+export const ABORT_ERROR_NAME = 'AbortError';

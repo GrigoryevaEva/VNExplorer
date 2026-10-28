@@ -52,7 +52,9 @@ export function alternativeTitles(novel: VisualNovelDetails): string[] {
 
 export function formatPlayTime(novel: VisualNovelDetails): string {
     if (novel.length_minutes != null && novel.length_minutes > 0) {
-        if (novel.length_minutes < 60) return 'About an hour or less';
+        if (novel.length_minutes < 60) {
+            return 'About an hour or less';
+        }
         const hours = Math.round(novel.length_minutes / 60);
         return `About ${hours} ${hours === 1 ? 'hour' : 'hours'}`;
     }
