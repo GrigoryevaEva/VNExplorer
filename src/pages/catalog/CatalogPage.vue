@@ -1,227 +1,45 @@
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
-    import { useRoute, useRouter } from 'vue-router';
+    import { selectionWithoutFilters } from '@/entities/catalog';
+    import CacheNotice from '@/ui/CacheNotice.vue';
+    import LanguageFilter from '@/ui/LanguageFilter.vue';
+    import NovelCard from '@/ui/NovelCard.vue';
+    import TagPicker from '@/ui/TagPicker.vue';
 
-    import { isVndbCancellation } from '@/api/client';
-    import { vndbRequestMessage } from '@/components/vndb-feedback';
-
-    import { fetchTitleMatchCount, needsTitleMatchCount } from '../modules/catalog/emptySearch';
-    import {
-        CATALOG_PAGE_SIZE,
-        type CatalogSelection,
-        fetchCatalogSelection,
-        selectionFromQuery,
-        selectionToQuery,
-        selectionWithoutFilters,
-    } from '../modules/catalog/selection';
-    import { loadTagDirectory } from '../modules/tags/directory';
-    import type { VisualNovelCard } from '../modules/vndb/types';
-    import CacheNotice from '../ui/CacheNotice.vue';
-    import LanguageFilter from '../ui/LanguageFilter.vue';
-    import NovelCard from '../ui/NovelCard.vue';
-    import TagPicker from '../ui/TagPicker.vue';
-    const TITLE_MATCH_ERROR_MESSAGE = 'Could not check title matches. Please try again.';
-    const tagsOpen = ref(false);
-    const route = useRoute();
-    const router = useRouter();
-    const applied = computed(() => selectionFromQuery(route.query));
-    const draftSearch = ref(applied.value.search);
-    const draftIncluded = ref([...applied.value.includedTags]);
-    const draftExcluded = ref([...applied.value.excludedTags]);
-    const draftStrict = ref(applied.value.strictMatch);
-    function selectTag(id: string, action: 'include' | 'exclude') {
-        const active = (action === 'include' ? draftIncluded : draftExcluded).value.includes(id);
-        draftIncluded.value = draftIncluded.value.filter((tag) => tag !== id);
-        draftExcluded.value = draftExcluded.value.filter((tag) => tag !== id);
-        if (!active) {
-            (action === 'include' ? draftIncluded : draftExcluded).value.push(id);
-        }
-    }
-    const tagNames = ref<Record<string, string>>({});
-    const tagName = (id: string) => tagNames.value[id] ?? id;
-    async function readTagNames() {
-        try {
-            const tags = await loadTagDirectory(() => {});
-            tagNames.value = Object.fromEntries(tags.map((tag) => [tag.id, tag.name]));
-        } catch {
-            /* The picker exposes retry if loading fails. */
-        }
-    }
-    watch(
-        () => [...draftIncluded.value, ...draftExcluded.value].join(),
-        (ids) => {
-            if (ids) {
-                void readTagNames();
-            }
-        },
-        { immediate: true }
-    );
-    const draftLanguage = ref(applied.value.language);
-    const filterDialog = ref<HTMLDialogElement>();
-    const filterPanel = ref<HTMLElement>();
-    const mobileFiltersOpen = ref(false);
-    function closeFilters() {
-        filterDialog.value?.close();
-        mobileFiltersOpen.value = false;
-    }
-    function openFilters() {
-        mobileFiltersOpen.value = true;
-        filterDialog.value?.showModal();
-    }
-    function applyFilters() {
-        void navigate({
-            ...applied.value,
-            language: draftLanguage.value,
-            includedTags: [...draftIncluded.value],
-            excludedTags: [...draftExcluded.value],
-            strictMatch: draftStrict.value,
-            page: 1,
-        });
-        closeFilters();
-    }
-    const novels = ref<VisualNovelCard[]>([]);
-    const loading = ref(true);
-    const error = ref('');
-    const stale = ref(false);
-    const titleMatchCount = ref<number | undefined>();
-    const count = ref<number | undefined>();
-    const more = ref(false);
-    const grid = ref<HTMLElement>();
-    let controller: AbortController | undefined;
-    let generation = 0;
-    const totalPages = computed(() =>
-        Math.max(
-            1,
-            count.value === undefined
-                ? applied.value.page + Number(more.value)
-                : Math.ceil(count.value / CATALOG_PAGE_SIZE)
-        ));
-    const pageNumbers = computed(() =>
-        [
-            ...new Set([
-                1,
-                ...Array.from({ length: 3 }, (_, index) => applied.value.page + index - 1),
-                totalPages.value,
-            ]),
-        ]
-            .filter((page) => page >= 1 && page <= totalPages.value)
-            .sort((a, b) => a - b));
-    function rememberScroll() {
-        // Vue Router keeps each navigation entry's state when going Back/Forward.
-        window.history.replaceState(
-            { ...window.history.state, catalogScroll: grid.value?.scrollTop ?? 0 },
-            ''
-        );
-    }
-    async function navigate(selection: CatalogSelection) {
-        rememberScroll();
-        await router.push({ query: selectionToQuery(selection), state: { catalogScroll: 0 } });
-    }
-    function submit() {
-        void navigate({ ...applied.value, search: draftSearch.value.trim(), page: 1 });
-    }
-    function changeSort(event: Event) {
-        void navigate({
-            ...applied.value,
-            sort: (event.target as HTMLSelectElement).value as CatalogSelection['sort'],
-            page: 1,
-        });
-    }
-    async function load() {
-        const request = ++generation;
-        controller?.abort();
-        controller = new AbortController();
-        const selection = { ...applied.value };
-        const scroll = Number(window.history.state?.catalogScroll ?? 0);
-        let checkingTitleMatches = false;
-        loading.value = true;
-        error.value = '';
-        stale.value = false;
-        titleMatchCount.value = undefined;
-        try {
-            const response = await fetchCatalogSelection(selection, {
-                signal: controller.signal,
-                onStale: () => {
-                    if (request === generation) {
-                        stale.value = true;
-                    }
-                },
-            });
-            if (request !== generation) {
-                return;
-            }
-            novels.value = response.results;
-            count.value = response.count;
-            more.value = response.more;
-            if (!response.results.length && needsTitleMatchCount(selection)) {
-                checkingTitleMatches = true;
-                const matches = await fetchTitleMatchCount(selection.search, {
-                    signal: controller.signal,
-                    onStale: () => {
-                        if (request === generation) {
-                            stale.value = true;
-                        }
-                    },
-                });
-                if (request !== generation) {
-                    return;
-                }
-                titleMatchCount.value = matches;
-            }
-        } catch (reason) {
-            if (request !== generation || isVndbCancellation(reason)) {
-                return;
-            }
-            error.value = checkingTitleMatches
-                ? TITLE_MATCH_ERROR_MESSAGE
-                : vndbRequestMessage(reason);
-        } finally {
-            if (request === generation) {
-                loading.value = false;
-                await nextTick();
-                if (grid.value) {
-                    grid.value.scrollTop = scroll;
-                }
-            }
-        }
-    }
-    watch(
-        () =>
-            JSON.stringify([
-                applied.value.includedTags,
-                applied.value.excludedTags,
-                applied.value.strictMatch,
-            ]),
-        () => {
-            draftIncluded.value = [...applied.value.includedTags];
-            draftExcluded.value = [...applied.value.excludedTags];
-            draftStrict.value = applied.value.strictMatch;
-        }
-    );
-    watch(
-        () => applied.value.search,
-        (search) => {
-            draftSearch.value = search;
-        }
-    );
-    watch(
-        () => applied.value.language,
-        (language) => {
-            draftLanguage.value = language;
-        }
-    );
-    watch(
-        () => route.fullPath,
-        () => {
-            void load();
-        },
-        { immediate: true }
-    );
-    onBeforeUnmount(() => {
-        rememberScroll();
-        generation++;
-        controller?.abort();
-    });
+    import CatalogPagination from './components/CatalogPagination.vue';
+    import { useCatalog } from './useCatalog';
+    const {
+        tagsOpen,
+        applied,
+        draftSearch,
+        draftIncluded,
+        draftExcluded,
+        draftStrict,
+        selectTag,
+        tagName,
+        readTagNames,
+        draftLanguage,
+        filterDialog,
+        filterPanel,
+        mobileFiltersOpen,
+        closeFilters,
+        openFilters,
+        applyFilters,
+        novels,
+        loading,
+        error,
+        stale,
+        titleMatchCount,
+        more,
+        bindGrid,
+        pageNumbers,
+        rememberScroll,
+        navigate,
+        submit,
+        changeSort,
+        load,
+        resultCountLabel,
+        selectionLanguageLabel,
+    } = useCatalog();
 </script>
 
 <template>
@@ -278,7 +96,7 @@
                     >
                 </div>
                 <div
-                    ref="grid"
+                    :ref="bindGrid"
                     class="catalog-results"
                     role="region"
                     aria-label="Catalog results"
@@ -352,45 +170,14 @@
                             :index="index"
                     /></div>
                 </div>
-                <footer class="catalog-footer"
-                    ><span class="catalog-result-count">{{
-                        loading
-                            ? 'Loading stories…'
-                            : error
-                              ? 'Connection interrupted'
-                              : count === undefined
-                                ? `${novels.length} stories on this page`
-                                : `${count.toLocaleString('en')} stories`
-                    }}</span
-                    ><nav
-                        class="catalog-pagination"
-                        aria-label="Catalog pages"
-                        ><button
-                            aria-label="Previous page"
-                            :disabled="applied.page <= 1"
-                            @click="navigate({ ...applied, page: applied.page - 1 })"
-                            >←</button
-                        ><template
-                            v-for="(page, index) in pageNumbers"
-                            :key="page"
-                            ><span
-                                v-if="index && page > pageNumbers[index - 1]! + 1"
-                                aria-hidden="true"
-                                >…</span
-                            ><button
-                                :aria-label="`Page ${page}`"
-                                :aria-current="page === applied.page ? 'page' : undefined"
-                                @click="navigate({ ...applied, page })"
-                                >{{ page }}</button
-                            ></template
-                        ><button
-                            aria-label="Next page"
-                            :disabled="!more || loading"
-                            @click="navigate({ ...applied, page: applied.page + 1 })"
-                            >→</button
-                        ></nav
-                    ></footer
-                >
+                <CatalogPagination
+                    :current-page="applied.page"
+                    :page-numbers="pageNumbers"
+                    :loading="loading"
+                    :more="more"
+                    :result-count-label="resultCountLabel"
+                    @change="navigate({ ...applied, page: $event })"
+                />
             </div>
             <aside
                 class="catalog-sidebar"
@@ -460,14 +247,7 @@
                         ><div
                             ><dt>Language</dt
                             ><dd
-                                >{{
-                                    applied.language === 'ru'
-                                        ? 'Russian'
-                                        : applied.language === 'en'
-                                          ? 'English'
-                                          : 'All languages'
-                                }}
-                                <span aria-hidden="true">↗</span></dd
+                                >{{ selectionLanguageLabel }} <span aria-hidden="true">↗</span></dd
                             ></div
                         ><div
                             ><dt>Tags</dt
@@ -647,32 +427,6 @@
         border-radius: 10px;
     }
 
-    .catalog-pagination {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .catalog-pagination button {
-        min-width: 34px;
-        min-height: 38px;
-        color: var(--muted);
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-    }
-
-    .catalog-pagination button[aria-current] {
-        font-weight: bold;
-        color: var(--bg);
-        background: var(--lime);
-        border-color: var(--lime);
-    }
-
-    .catalog-pagination button:disabled {
-        opacity: 0.35;
-    }
-
     @media (width <= 760px) {
         .mobile-filters {
             display: inline-flex;
@@ -708,15 +462,6 @@
             height: 32px;
             padding: 5px 8px;
             font-size: 11px;
-        }
-
-        .catalog-pagination {
-            gap: 3px;
-        }
-
-        .catalog-pagination button {
-            min-width: 30px;
-            min-height: 40px;
         }
 
         .catalog-footer {
