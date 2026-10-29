@@ -42,3 +42,32 @@
 <template>
     <div class="source-description"><SourceNodes :nodes="nodes" /></div>
 </template>
+
+<style scoped>
+    .source-description :deep(.source-paragraph-break) {
+        display: block;
+        height: 1.25em;
+    }
+
+    .source-description :deep(a) {
+        color: var(--mint);
+        text-underline-offset: 3px;
+    }
+
+    .source-description :deep(blockquote) {
+        margin: 1em 0;
+        padding-left: 18px;
+        color: var(--muted);
+        border-left: 3px solid var(--mint);
+    }
+
+    .source-description :deep(.source-spoiler) {
+        padding: 10px 14px;
+        border: 1px solid var(--line);
+    }
+
+    .source-description :deep(.source-spoiler summary) {
+        color: var(--pink);
+        cursor: pointer;
+    }
+</style>

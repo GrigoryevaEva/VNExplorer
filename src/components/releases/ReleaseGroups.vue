@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import CacheNotice from '@/ui/CacheNotice.vue';
+    import { CacheNotice } from '@/components/vndb-feedback';
 
     import ReleaseRow from './ReleaseRow.vue';
     import { useReleaseGroups } from './useReleaseGroups';
@@ -117,7 +117,7 @@
     }
 
     h2 {
-        margin-bottom: 20px;
+        margin-bottom: var(--space-lg);
         font-size: 24px;
     }
 
@@ -126,7 +126,7 @@
     }
 
     .release-group {
-        margin-top: 12px;
+        margin-top: var(--space-sm);
         overflow: hidden;
         border: 1px solid var(--line);
         border-radius: 4px 16px 4px 4px;

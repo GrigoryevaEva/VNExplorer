@@ -39,7 +39,7 @@
         min-height: 36px;
         margin-top: 13px;
         padding: 8px 12px;
-        font-size: 12px;
+        font-size: var(--font-size-sm);
         font-weight: bold;
         color: var(--mint);
         background: transparent;

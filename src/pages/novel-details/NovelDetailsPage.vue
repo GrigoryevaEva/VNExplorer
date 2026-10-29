@@ -3,11 +3,11 @@
     import { ReleaseGroups } from '@/components/releases';
     import { SaveButton } from '@/components/saved';
     import { ScreenshotGallery } from '@/components/screenshots';
+    import { CoverImage } from '@/components/visual-novel';
+    import { CacheNotice } from '@/components/vndb-feedback';
     import { formatPlayTime, formatRating } from '@/entities/visual-novel';
     import { SourceDescription } from '@/shared/ui/source-description';
     import { formatReleaseDate } from '@/shared/utils/dates';
-    import CacheNotice from '@/ui/CacheNotice.vue';
-    import CoverImage from '@/ui/CoverImage.vue';
 
     import { catalogTagQuery, useNovelDetails } from './useNovelDetails';
 
@@ -163,7 +163,7 @@
     .detail-back {
         display: inline-block;
         margin-bottom: 30px;
-        font-size: 13px;
+        font-size: var(--font-size-body);
         text-decoration: none;
         color: var(--mint);
     }
@@ -196,8 +196,8 @@
     }
 
     .detail-facts dt {
-        margin-bottom: 8px;
-        font-size: 11px;
+        margin-bottom: var(--space-xs);
+        font-size: var(--font-size-xs);
         color: var(--muted);
     }
 
@@ -208,7 +208,7 @@
 
     .detail-facts p {
         margin-top: 6px;
-        font-size: 12px;
+        font-size: var(--font-size-sm);
         color: var(--muted);
     }
 
@@ -225,7 +225,7 @@
     }
 
     .detail-section h2 {
-        margin-bottom: 20px;
+        margin-bottom: var(--space-lg);
         font-size: 24px;
         letter-spacing: -0.5px;
     }
@@ -239,7 +239,7 @@
     .detail-titles {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: var(--space-sm);
         margin: 0;
         padding: 0;
         list-style: none;
@@ -307,7 +307,7 @@
         }
 
         .detail-facts {
-            gap: 20px;
+            gap: var(--space-lg);
         }
     }
 </style>

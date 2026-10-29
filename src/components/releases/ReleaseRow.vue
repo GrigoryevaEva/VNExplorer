@@ -84,9 +84,9 @@
         display: grid;
         grid-template-columns: 130px 88px minmax(0, 1fr) 125px 80px;
         align-items: center;
-        gap: 12px;
+        gap: var(--space-sm);
         padding: 17px 0;
-        font-size: 12px;
+        font-size: var(--font-size-sm);
         line-height: 1.6;
         border-top: 1px dashed var(--line);
     }
@@ -101,7 +101,7 @@
         flex-wrap: wrap;
         gap: 4px 10px;
         margin-top: 4px;
-        font-size: 11px;
+        font-size: var(--font-size-xs);
         color: var(--muted);
     }
 
@@ -118,7 +118,7 @@
 
     .planned {
         display: block;
-        font-size: 10px;
+        font-size: var(--font-size-caption);
         text-transform: uppercase;
         color: var(--lime);
     }

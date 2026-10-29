@@ -4,3 +4,5 @@ export const VNDB_REQUEST_MESSAGES = {
     INVALID_RESPONSE: 'VNDB returned an unexpected response. Please try again.',
     DEFAULT: 'We could not load stories from VNDB. Please try again.',
 } as const;
+
+export const VNDB_STALE_MESSAGE = 'Showing older cached data. VNDB could not be reached.';

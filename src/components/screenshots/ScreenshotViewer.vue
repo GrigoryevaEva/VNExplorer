@@ -84,7 +84,7 @@
         height: calc(100dvh - 40px);
         max-height: none;
         margin: auto;
-        padding: 20px;
+        padding: var(--space-lg);
         color: inherit;
         background: var(--bg);
         border: 1px solid var(--line);
@@ -94,7 +94,7 @@
     .screenshot-viewer[open] {
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: var(--space-md);
     }
 
     .screenshot-viewer::backdrop {
@@ -113,11 +113,11 @@
         flex-shrink: 0;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
+        gap: var(--space-sm);
     }
 
     .viewer-toolbar span {
-        font-size: 13px;
+        font-size: var(--font-size-body);
         color: var(--muted);
     }
 
@@ -137,7 +137,7 @@
         .screenshot-viewer {
             width: calc(100% - 16px);
             height: calc(100dvh - 16px);
-            padding: 12px;
+            padding: var(--space-sm);
         }
 
         .screenshot-viewer button {

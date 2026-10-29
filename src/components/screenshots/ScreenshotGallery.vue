@@ -38,7 +38,7 @@
     }
 
     h2 {
-        margin-bottom: 20px;
+        margin-bottom: var(--space-lg);
         font-size: 24px;
         letter-spacing: -0.5px;
     }

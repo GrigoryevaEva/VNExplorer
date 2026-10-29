@@ -1,11 +1,12 @@
 <script setup lang="ts">
     import type { TCatalogLanguage } from '@/entities/catalog';
+    import { CATALOG_LANGUAGES } from '@/entities/catalog';
     defineProps<{ modelValue: TCatalogLanguage }>();
     defineEmits<{ 'update:modelValue': [value: TCatalogLanguage] }>();
-    const choices = [
-        { value: 'all', label: 'All' },
-        { value: 'ru', label: 'Russian' },
-        { value: 'en', label: 'English' },
+    const LANGUAGE_CHOICES = [
+        { value: CATALOG_LANGUAGES.ALL, label: 'All' },
+        { value: CATALOG_LANGUAGES.RUSSIAN, label: 'Russian' },
+        { value: CATALOG_LANGUAGES.ENGLISH, label: 'English' },
     ] as const;
 </script>
 
@@ -13,7 +14,7 @@
     <fieldset class="language-filter">
         <legend>Language availability</legend>
         <label
-            v-for="choice in choices"
+            v-for="choice in LANGUAGE_CHOICES"
             :key="choice.value"
             ><input
                 type="radio"
@@ -35,7 +36,7 @@
     }
 
     legend {
-        margin-bottom: 12px;
+        margin-bottom: var(--space-sm);
         font-weight: 700;
     }
 
@@ -54,8 +55,8 @@
     }
 
     p {
-        font-size: 12px;
+        font-size: var(--font-size-sm);
         line-height: 1.5;
-        color: #425345;
+        color: var(--mint-ink);
     }
 </style>
