@@ -1,47 +1,49 @@
-import { chromium, expect } from '@playwright/test';
+import type { Browser } from '@playwright/test';
+import { expect } from '@playwright/test';
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
+import { z } from 'zod';
+
+import { openLivePage, startDevServer } from './lib/live-browser.ts';
+
+const NOVEL_SCHEMA = z.object({
+    id: z.string(),
+    title: z.string(),
+    image: z.object({ url: z.string() }).nullable().optional(),
+});
+const CATALOG_SCHEMA = z.object({
+    results: z.array(NOVEL_SCHEMA),
+    count: z.number(),
+    more: z.boolean(),
+});
+const DETAIL_SCHEMA = z.object({
+    results: z.array(
+        NOVEL_SCHEMA.extend({ tags: z.array(z.object({ spoiler: z.number().int() })) })
+    ),
+});
+const RELEASES_SCHEMA = z.object({
+    results: z.array(
+        z.object({
+            id: z.string(),
+            patch: z.boolean(),
+            languages: z.array(z.object({ lang: z.string(), mtl: z.boolean() })),
+            vns: z.array(z.object({ id: z.string(), rtype: z.string() })),
+        })
+    ),
+});
 
 // Deliberately bounded: initial Catalog, alias, two tiny pages, one detail,
 // its release manifest and one expanded language. Never open the full tag picker.
-const port = process.env.PLAYWRIGHT_PORT ?? '4190';
-const origin = `http://127.0.0.1:${port}`;
 const artifacts = resolve(process.env.SMOKE_ARTIFACT_DIR ?? 'test-results/live-handoff');
 await mkdir(artifacts, { recursive: true });
-const server = spawn(
-    process.execPath,
-    ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', port, '--strictPort'],
-    { stdio: 'pipe', windowsHide: true }
-);
-let serverLog = '';
-server.stdout.on('data', (chunk) => {
-    serverLog += chunk;
-});
-server.stderr.on('data', (chunk) => {
-    serverLog += chunk;
-});
-let browser;
+const server = await startDevServer(process.env.PLAYWRIGHT_PORT ?? '4192');
+const origin = server.origin;
+let browser: Browser | undefined;
 try {
-    let ready = false;
-    for (let i = 0; i < 120; i++) {
-        if (server.exitCode !== null) {
-            throw new Error(`Local server exited: ${serverLog}`);
-        }
-        try {
-            ready = (await fetch(origin)).ok;
-        } catch {
-            /* Local development server startup. */
-        }
-        if (ready) {
-            break;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 250));
-    }
-    assert(ready, `Local app started: ${serverLog}`);
-    browser = await chromium.launch();
-    const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    const live = await openLivePage({ width: 1440, height: 1000 });
+    browser = live.browser;
+    const page = live.page;
     let apiRequests = 0;
     page.on('request', (request) => {
         if (request.url().startsWith('https://api.vndb.org/kana/')) {
@@ -58,7 +60,7 @@ try {
     await page.goto(origin);
     const catalogResponse = await pending;
     assert.equal(catalogResponse.status(), 200);
-    const catalog = await catalogResponse.json();
+    const catalog = CATALOG_SCHEMA.parse(await catalogResponse.json());
     assert.equal(catalog.results.length, 24);
     assert(catalog.count > 24);
     await expect(
@@ -71,7 +73,10 @@ try {
                     () =>
                         page
                             .getByRole('img', { name: `${novel.title} cover`, exact: true })
-                            .evaluate((image) => image.complete && image.naturalWidth > 0),
+                            .evaluate(
+                                (image: HTMLImageElement) =>
+                                    image.complete && image.naturalWidth > 0
+                            ),
                     { timeout: 20000 }
                 )
                 .toBe(true);
@@ -86,20 +91,23 @@ try {
     await page.getByRole('searchbox', { name: 'Search titles' }).press('Enter');
     const aliasResponse = await pending;
     assert.equal(aliasResponse.status(), 200);
-    const alias = await aliasResponse.json();
+    const alias = CATALOG_SCHEMA.parse(await aliasResponse.json());
+    const aliasNovel = alias.results.find((novel) => novel.id === 'v2002');
+    assert(aliasNovel, 'Alias search returns Steins;Gate');
     assert(alias.results.some((novel) => novel.id === 'v2002'));
     await expect(
         page.getByRole('heading', {
-            name: alias.results.find((novel) => novel.id === 'v2002').title,
+            name: aliasNovel.title,
             exact: true,
         })
     ).toBeVisible();
-    const pages = await page.evaluate(async () => {
-        const pages = [];
+    const rawPages: unknown = await page.evaluate(async () => {
+        const pages: unknown[] = [];
         for (const page of [1, 2]) {
             const response = await fetch('https://api.vndb.org/kana/vn', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                signal: AbortSignal.timeout(15_000),
                 body: JSON.stringify({
                     filters: ['search', '=', 'sakura'],
                     fields: 'title,released',
@@ -117,6 +125,7 @@ try {
         }
         return pages;
     });
+    const pages = z.array(CATALOG_SCHEMA).parse(rawPages);
     assert.equal(pages[0].count, pages[1].count);
     assert(pages[0].count > 2 && pages.every((page) => page.more && page.results.length === 2));
     assert.notEqual(pages[0].results[0].id, pages[1].results[0].id);
@@ -124,7 +133,7 @@ try {
     await page.goto(`${origin}/vn/v17`);
     const detailResponse = await pending;
     assert.equal(detailResponse.status(), 200);
-    const detail = (await detailResponse.json()).results[0];
+    const detail = DETAIL_SCHEMA.parse(await detailResponse.json()).results[0];
     assert(Array.isArray(detail.tags) && detail.tags.every((tag) => Number.isInteger(tag.spoiler)));
     await expect(page.getByRole('heading', { name: detail.title, level: 1 })).toBeVisible();
     const releasePending = page.waitForResponse(
@@ -136,7 +145,7 @@ try {
     await page.getByRole('button', { name: /^English · \d+ releases?$/ }).click();
     const releaseResponse = await releasePending;
     assert.equal(releaseResponse.status(), 200);
-    const releases = (await releaseResponse.json()).results;
+    const releases = RELEASES_SCHEMA.parse(await releaseResponse.json()).results;
     assert(releases.length > 0);
     assert(
         releases.every(
@@ -177,7 +186,7 @@ try {
         },
         alias: {
             status: aliasResponse.status(),
-            title: alias.results.find((novel) => novel.id === 'v2002').title,
+            title: aliasNovel.title,
         },
         pages: pages.map((page) => ({
             count: page.count,
@@ -207,6 +216,9 @@ try {
         })
     );
 } finally {
-    await browser?.close();
-    server.kill();
+    try {
+        await browser?.close();
+    } finally {
+        await server.close();
+    }
 }

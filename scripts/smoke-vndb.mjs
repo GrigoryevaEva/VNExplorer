@@ -1,36 +1,12 @@
-import { chromium } from '@playwright/test';
-import { spawn } from 'node:child_process';
+import { openLivePage, startDevServer } from './lib/live-browser.ts';
 
-const port = process.env.PLAYWRIGHT_PORT ?? '4171';
-const base = `http://127.0.0.1:${port}`;
-const server = spawn(
-    process.execPath,
-    ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', port, '--strictPort'],
-    { stdio: 'pipe', windowsHide: true }
-);
-let serverLog = '';
-server.stderr.on('data', (chunk) => {
-    serverLog += chunk;
-});
+const server = await startDevServer(process.env.PLAYWRIGHT_PORT ?? '4171');
+const base = server.origin;
 let browser;
 try {
-    let ready = false;
-    for (let attempt = 0; attempt < 40; attempt++) {
-        try {
-            ready = (await fetch(base)).ok;
-        } catch {
-            /* Wait for the local server. */
-        }
-        if (ready) {
-            break;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 250));
-    }
-    if (!ready) {
-        throw new Error(`Dev server did not start. ${serverLog}`);
-    }
-    browser = await chromium.launch();
-    const page = await browser.newPage({ viewport: { width: 1440, height: 1050 } });
+    const live = await openLivePage({ width: 1440, height: 1050 });
+    browser = live.browser;
+    const page = live.page;
     const request = page.waitForResponse(
         (response) =>
             response.url() === 'https://api.vndb.org/kana/vn' &&
@@ -59,6 +35,9 @@ try {
         })
     );
 } finally {
-    await browser?.close();
-    server.kill();
+    try {
+        await browser?.close();
+    } finally {
+        await server.close();
+    }
 }
