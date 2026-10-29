@@ -3,7 +3,7 @@
     import { TagPicker } from '@/components/tags';
     import { NovelCard, NovelGrid } from '@/components/visual-novel';
     import { CacheNotice } from '@/components/vndb-feedback';
-    import { selectionWithoutFilters } from '@/entities/catalog';
+    import { CATALOG_SORTS, selectionWithoutFilters } from '@/entities/catalog';
 
     import CatalogPagination from './components/CatalogPagination.vue';
     import LanguageFilter from './components/LanguageFilter.vue';
@@ -86,8 +86,10 @@
                         ><select
                             :value="applied.sort"
                             @change="changeSort"
-                            ><option value="rating">Top rated ★</option
-                            ><option value="released">First release · newest</option></select
+                            ><option :value="CATALOG_SORTS.RATING">Top rated ★</option
+                            ><option :value="CATALOG_SORTS.RELEASED"
+                                >First release · newest</option
+                            ></select
                         ></label
                     >
                     <button
@@ -264,7 +266,7 @@
                             ><dt>Order</dt
                             ><dd
                                 >{{
-                                    applied.sort === 'rating'
+                                    applied.sort === CATALOG_SORTS.RATING
                                         ? 'Highest rated first'
                                         : 'Newest first release'
                                 }}

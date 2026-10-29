@@ -2,7 +2,7 @@ import { createPinia, storeToRefs } from 'pinia';
 
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, expect, expectTypeOf, it, vi } from 'vitest';
 
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
@@ -11,6 +11,29 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 afterAll(() => server.close());
+
+it('restricts directory mutation to its load action', async () => {
+    const { useTagsStore } = await import('@/stores/tags');
+    const pinia = createPinia();
+    const store = useTagsStore(pinia);
+    const patch: unknown = Reflect.get(store, '$patch');
+    if (typeof patch === 'function') {
+        patch({ loaded: 500 });
+    }
+    expect(store.loaded).toBe(0);
+    expect(patch).toBeUndefined();
+    expect(Reflect.get(store, '$reset')).toBeUndefined();
+    expect(Reflect.get(store, '$subscribe')).toBeUndefined();
+    expect(Reflect.get(store, '$onAction')).toBeUndefined();
+    expectTypeOf(store.$patch).toEqualTypeOf<never>();
+    expectTypeOf(store.$subscribe).toEqualTypeOf<never>();
+    expect(store).toBe(useTagsStore(pinia));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    Reflect.set(store, '$state', { loaded: 500 });
+    Reflect.set(store.$state, 'loaded', 500);
+    expect(store.loaded).toBe(0);
+    expect(warn).toHaveBeenCalled();
+});
 
 it('shares a paginated directory between consumers and registers its readonly state in Pinia', async () => {
     let release!: () => void;

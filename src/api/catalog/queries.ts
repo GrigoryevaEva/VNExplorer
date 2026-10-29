@@ -1,10 +1,11 @@
 import type { IRequestOptions } from '@/api/client';
 import { queryVndb } from '@/api/client';
-import type { IVndbQuery } from '@/api/protocol';
+import type { IVndbQuery, IVndbResponse } from '@/api/protocol';
 import { CARD_FIELDS, VNDB_ENDPOINTS, VNDB_FIELDS, VNDB_OPERATORS } from '@/api/protocol';
 import { mapNovelCard, novelCardSchema } from '@/api/visual-novels';
 import type { ICatalogSelection } from '@/entities/catalog';
-import { CATALOG_PAGE_SIZE, selectionWithoutFilters } from '@/entities/catalog';
+import { CATALOG_LANGUAGES, CATALOG_PAGE_SIZE, selectionWithoutFilters } from '@/entities/catalog';
+import type { IVisualNovelCard } from '@/entities/visual-novel';
 
 import { RELEASE_AVAILABILITY, TAG_RATING_THRESHOLD, TAG_SPOILER_LEVEL } from './constants';
 export const compileCatalogQuery = (selection: ICatalogSelection): IVndbQuery => {
@@ -32,7 +33,7 @@ export const compileCatalogQuery = (selection: ICatalogSelection): IVndbQuery =>
         ]);
     }
     // One release must satisfy both language and publication, including demos and partial translations.
-    if (selection.language !== 'all') {
+    if (selection.language !== CATALOG_LANGUAGES.ALL) {
         conditions.push([
             VNDB_FIELDS.RELEASE,
             VNDB_OPERATORS.EQUAL,
@@ -59,7 +60,7 @@ export const compileCatalogQuery = (selection: ICatalogSelection): IVndbQuery =>
 export const fetchCatalogSelection = async (
     selection: ICatalogSelection,
     options: IRequestOptions = {}
-) => {
+): Promise<IVndbResponse<IVisualNovelCard>> => {
     const response = await queryVndb(VNDB_ENDPOINTS.NOVELS, compileCatalogQuery(selection), {
         ...options,
         schema: novelCardSchema,

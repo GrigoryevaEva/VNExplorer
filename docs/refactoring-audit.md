@@ -68,6 +68,45 @@ The final unit invocation ran alone after Chromium and static checks completed; 
 the valid sequential pipeline result. CI already runs unit before browser checks.
 Quality and stable-fixer results are recorded with the completed ticket.
 
+## Final review follow-up
+
+The final review reproduced a public readonly facade escape: Pinia's closure-bound
+`$patch` could mutate Saved without writing storage and could replace tag state.
+Both public facades now exclude `$patch`, `$reset`, `$subscribe` (whose callback
+receives mutable state) and `$onAction` (whose context exposes the mutable store).
+The actual registered Pinia stores retain their APIs for hydration and DevTools;
+public identity is stable and state, `$state`, nested data and `storeToRefs` remain
+readonly. Named actions remain the supported mutation interface.
+
+Pinia infers computed getter types through the original `$onAction` signature.
+That signature is retained only as an internal typing bridge: public `$onAction`
+is unavailable at runtime and is not a supported observer. Typing it as `never`
+removes `savedNovels` from Pinia's inferred `storeToRefs` result. `$patch`, `$reset`
+and `$subscribe` have no callable public TypeScript contract. This facade is an
+application API boundary; deliberate Vue `toRaw` or direct access to the Pinia
+registry remains framework infrastructure, not a supported application API.
+
+Catalog URL/API/UI consumers now use their owner's language and sort constants;
+formatting locales remain formatting locales. Explicit return contracts were added
+to catalog fetching, release websites, catalog tag navigation and two script
+resource helpers. No UI labels, URLs, styles, stored format or version changed.
+
+Public store regressions demonstrated red before green for both `$patch` escapes
+and the original exposed subscription hook. Existing hydration, getter typing,
+nested readonly, persistence refusal, cross-consumer and storage-event checks remain.
+
+Follow-up verification: 66/66 unit tests (18 files), then 81/81 Chromium scenarios
+(port 4283), 9/9 automation checks, full typecheck including scripts, ESLint,
+Stylelint, Prettier and production build pass. Production root `/` and `/novels/`
+both preserve direct detail/Saved refresh, full journey and catalog history, with
+ten asset responses and zero page errors each. No assertion or timeout was weakened.
+The first lint run caught an import-order issue; it was corrected and the full lint
+rerun passes. Changeset validation runs against the committed follow-up. The previous
+bounded live VNDB evidence remains applicable; this follow-up does not change HTTP
+transport, response schemas or protocol values and does not add another live probe.
+Logs are retained under the external implementation-notes/refactoring/review-fixes/
+directory. Task 12 remains unstarted pending human review.
+
 ## Remaining gate
 
 The three specified migration parts are ready for final code and human review. Task 12

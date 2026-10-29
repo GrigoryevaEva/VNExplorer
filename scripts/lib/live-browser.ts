@@ -12,7 +12,9 @@ const API_ORIGIN = 'https://api.vndb.org';
 const API_ROUTE = `${API_ORIGIN}/kana/**`;
 const LOG_LIMIT = 8_000;
 
-export const startDevServer = async (port: string) => {
+export const startDevServer = async (
+    port: string
+): Promise<{ origin: string; close: () => Promise<void> }> => {
     if (!/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65535) {
         throw new Error('PLAYWRIGHT_PORT must be a valid TCP port.');
     }
