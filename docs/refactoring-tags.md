@@ -27,8 +27,7 @@ focus restoration, keyboard, touch descriptions and visual layout are retained.
 
 The old tag module and generic-UI picker entry were removed after their consumers moved;
 there is no parallel directory state or compatibility implementation. Their quality-rule
-exceptions and the bootstrap exception are removed. Existing unrelated exceptions remain
-scheduled for their owning migration tickets and final cleanup in 11.
+exceptions and the bootstrap exception are removed. Task 11 removed the final test exemptions.
 
 References: [Pinia setup stores](https://pinia.vuejs.org/core-concepts/#setup-stores),
 [Pinia storeToRefs](https://pinia.vuejs.org/core-concepts/#destructuring-from-a-store),

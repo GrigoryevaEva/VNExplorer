@@ -80,20 +80,6 @@ export default ts.config(
             'vue/block-order': ['error', { order: ['script', 'template', 'style'] }],
         },
     },
-    {
-        files: [
-            'tests/e2e/search-navigation.spec.ts',
-            'tests/e2e/tag-combinations.spec.ts',
-            'tests/e2e/tags.spec.ts',
-        ],
-        rules: {
-            '@typescript-eslint/no-explicit-any': 'off',
-        },
-    },
-    {
-        files: ['tests/e2e/tag-combinations.spec.ts'],
-        rules: { 'func-style': 'off' },
-    },
     // Disable formatting conflicts after all presets and overrides. Re-enable
     // the compatible all-braces convention (Prettier's preset disables curly).
     prettier,

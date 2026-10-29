@@ -30,8 +30,8 @@ visible on affected language groups. `ReleaseRow` renders dates, age, edition la
 and one/multiple safe external sites, falling back to plain text when no suitable site exists.
 
 The old release module, release component and final release-only formatter compatibility
-entry are removed. Their exact baseline quality exceptions are removed; unrelated migration
-debt remains scheduled for 08–11.
+entry are removed. Their exact baseline quality exceptions are removed; task 11 completed
+the remaining migration cleanup.
 
 Tests exercise public HTTP/cache boundaries, the mounted component with actual HTTP requests,
 and pure release presentation. The mounted Node test explicitly selects Axios's real HTTP

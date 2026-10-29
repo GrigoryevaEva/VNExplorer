@@ -36,7 +36,7 @@ Static checks do not execute tests or modify files. Use `lint:fix`, `lint:styles
 for explicit corrections; `test:unit:watch` runs Vitest interactively. The `@/` alias resolves to
 `src/` in Vite, TypeScript and Vitest. Unit tests use Node by default; component tests opt into
 jsdom. Playwright remains a separate browser suite. See [quality and migration notes](docs/refactoring-quality.md)
-for the rules, tool ownership and temporary exceptions scheduled for removal in task 11.
+for the rules and tool ownership; the migration exceptions and legacy entry points are removed.
 
 `test:static` builds, then serves only generated files through a test SPA fallback. It checks `/` and a separately built `/novels/` base, direct detail/Saved links, refresh, assets and the full Catalog → detail/gallery/releases → Saved → Catalog flow. HTTP-edge fixtures make these checks deterministic.
 

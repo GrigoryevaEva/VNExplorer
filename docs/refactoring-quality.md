@@ -84,21 +84,19 @@ child of the system temp directory with its owned `vndb-...-` prefix. Git trust 
 subprocess checkout, never persisted globally. Release package/Git/changelog paths follow the
 caller's working directory; the Changesets executable resolves from the installed project.
 
-## Temporary compatibility, removed by task 11
+## Completed migration
 
-Application code has no remaining ESLint migration exemptions. Task 09 moved the global
-cascade to shared UI and scoped component/page styles, with duplicate-selector and
-descending-specificity checks enabled everywhere.
+All application, test and script files use the same conventions without migration overrides.
+Task 11 removed the last three E2E explicit-any exemptions and the fixture function-style
+exemption, preserving every browser scenario and assertion. Request observations use the
+public protocol type and the tag fixture validates its predicate shape. Duplicate-selector
+and descending-specificity checks remain enabled throughout component and shared styles.
 
-These exceptions apply only to explicitly enumerated baseline paths. They do not cover new
-files. Remove a file's entry when migrating it, rather than copying exceptions into its new
-location. Task 11 removes all remaining compatibility overrides and this migration section.
+The unused modules/vndb compatibility entry points were removed after checking all source,
+test and script consumers. There is one Axios transport, pending-request map and response
+cache; Saved persistence remains separate. See [the final contract audit](refactoring-audit.md)
+for the coverage and verification record.
 
-| Scope                                                                             | Deferred rules and reason                                                                                                                               | Removal                             |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| `tests/e2e/search-navigation.spec.ts`, `tag-combinations.spec.ts`, `tags.spec.ts` | Existing explicit `any` for fixture/request predicates remains until the affected contracts migrate; new tests use inferred or explicit concrete types. | Relevant scenario tasks, finally 11 |
-| `tests/e2e/tag-combinations.spec.ts`                                              | Existing helper function declarations.                                                                                                                  | Task 03, finally 11                 |
-
-Baseline before tooling: all 73 Chromium scenarios and production smoke at `/` and `/novels/`
-passed on commit `0fe8767`. The new unit/component tests preserve real Catalog URL, safe source
-markup and cover fallback contracts; they are not dependency-installation tests.
+Baseline before tooling: all 73 Chromium scenarios and production smoke at / and /novels/
+passed on commit 0fe8767. The current suite preserves those behaviors and extends public
+HTTP, storage and lifecycle coverage.

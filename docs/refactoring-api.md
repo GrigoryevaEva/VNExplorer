@@ -23,7 +23,7 @@ days for tags. Only network, timeout, HTTP 429 and server HTTP failures can use 
 older cached data. Invalid responses, unknown failures and other HTTP failures are not stale
 successes. Returned `stale` and `fetchedAt`, plus `onStale`, preserve provenance on screens.
 Incomplete release ID batches are not cached as complete answers. Successful per-record
-release rows still use this same cache through the compatibility entry point.
+release rows use this same cache through api/releases.
 
 `VndbError` distinguishes HTTP, network, timeout, cancellation, invalid response and unknown
 failures, retaining the original cause and applicable code/status. It contains technical
@@ -31,13 +31,12 @@ context rather than server-provided user text. Presentation selects trusted mess
 `components/vndb-feedback`; scenario-specific count and incomplete-release messages remain
 with their consumers. Cancellation has a dedicated predicate and is not displayed as failure.
 
-## Temporary compatibility
+## Completed migration
 
-`modules/vndb/client.ts` and `cache.ts` only re-export the new implementation. The old query
-and response type names also re-export the protocol contracts. They contain no second
-transport, request map or cache. Scenario migrations in tasks 03–07 provide their concrete
-row schemas; task 11 removes the compatibility entry points after all consumers migrate.
-The migrated api/releases owner validates concrete release-record DTOs before fresh or stale reuse; the old release path has been removed.
+The unused modules/vndb client/cache re-exports were removed in task 11 after checking all
+consumers. Scenario owners supply concrete row schemas through api/client; api/releases
+validates release-record DTOs before fresh or stale reuse. No old transport, query aliases
+or parallel cache remain.
 Saved localStorage remains independent and is never accessed or cleared by response-cache code.
 
 Tests use MSW at the HTTP boundary and public `queryVndb` calls for validation, cache reuse,
