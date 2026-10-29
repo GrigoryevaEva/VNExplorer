@@ -36,7 +36,8 @@ VNDB's site URL belongs to `api/protocol`, so shared code has no VNDB dependency
 tag descriptions use this renderer. There is no new markup language or product capability.
 
 The old detail/description implementations and unused catalog compatibility entries are removed.
-The gallery consumes the entity screenshot type directly (full lifecycle migration is task 08).
+The gallery consumes the entity screenshot type directly; task 08 moved it to
+components/screenshots with the lifecycle described in refactoring-screenshots.md.
 Task 07 moved common partial-date formatting to shared/utils/dates and removed the final formatter compatibility entry. Remaining unrelated quality exceptions stay
 with their owning tasks and are removed completely in 11.
 

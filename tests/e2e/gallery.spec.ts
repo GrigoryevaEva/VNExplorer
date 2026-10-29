@@ -7,7 +7,7 @@ const screenshots = [1, 2, 3].map((index) => ({
     dims: [1600, 900],
     thumbnail_dims: [256, 144],
 }));
-async function gallery(page: Page, images = screenshots, brokenImage = false) {
+const gallery = async (page: Page, images = screenshots, brokenImage = false): Promise<void> => {
     await page.route('https://images.example/**', (route) => {
         if (brokenImage && route.request().url().endsWith('-2.svg')) {
             return route.abort();
@@ -37,7 +37,7 @@ async function gallery(page: Page, images = screenshots, brokenImage = false) {
         });
     });
     await page.goto('/vn/v17');
-}
+};
 
 test('reader opens thumbnails after alternative titles and views complete screenshots with controls', async ({
     page,
@@ -148,4 +148,64 @@ test('phone viewer keeps loading feedback, complete artwork and controls within 
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true
     );
+});
+
+// Each opening captures the current page state; navigation wraps at both boundaries.
+test('repeated openings wrap once per key and restore each opening overflow, focus and scroll', async ({
+    page,
+}) => {
+    await gallery(page);
+    const thumbnail = page.getByRole('button', { name: 'Open screenshot 1', exact: true });
+    await thumbnail.scrollIntoViewIfNeeded();
+    const scroll = await page.evaluate(() => window.scrollY);
+    const viewer = page.getByRole('dialog', { name: 'Screenshot viewer' });
+    for (const overflow of ['scroll', 'auto', 'hidden']) {
+        await page.evaluate((value) => {
+            document.documentElement.style.overflow = value;
+        }, overflow);
+        await thumbnail.click();
+        await expect(viewer).toBeVisible();
+        await expect(page.locator('html')).toHaveCSS('overflow', 'hidden');
+        await page.keyboard.press('ArrowLeft');
+        await expect(
+            viewer.getByRole('img', { name: 'Screenshot 3 of 3', exact: true })
+        ).toBeVisible();
+        await page.keyboard.press('ArrowRight');
+        await expect(
+            viewer.getByRole('img', { name: 'Screenshot 1 of 3', exact: true })
+        ).toBeVisible();
+        await viewer.getByRole('button', { name: 'Previous screenshot' }).click();
+        await expect(
+            viewer.getByRole('img', { name: 'Screenshot 3 of 3', exact: true })
+        ).toBeVisible();
+        await viewer.getByRole('button', { name: 'Next screenshot' }).click();
+        await expect(
+            viewer.getByRole('img', { name: 'Screenshot 1 of 3', exact: true })
+        ).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(viewer).not.toBeVisible();
+        await expect(thumbnail).toBeFocused();
+        expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe(overflow);
+        expect(await page.evaluate(() => window.scrollY)).toBe(scroll);
+    }
+});
+
+test.describe('touch gallery', () => {
+    test.use({ hasTouch: true, viewport: { width: 320, height: 568 } });
+    test('reader opens, navigates and closes using touch controls', async ({ page }) => {
+        await gallery(page);
+        const thumbnail = page.getByRole('button', { name: 'Open screenshot 3', exact: true });
+        await thumbnail.tap();
+        const viewer = page.getByRole('dialog', { name: 'Screenshot viewer' });
+        await expect(
+            viewer.getByRole('img', { name: 'Screenshot 3 of 3', exact: true })
+        ).toBeVisible();
+        await viewer.getByRole('button', { name: 'Next screenshot' }).tap();
+        await expect(
+            viewer.getByRole('img', { name: 'Screenshot 1 of 3', exact: true })
+        ).toBeVisible();
+        await viewer.getByRole('button', { name: 'Close viewer' }).tap();
+        await expect(thumbnail).toBeFocused();
+        await expect(viewer).not.toBeVisible();
+    });
 });
