@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import type { IVndbQuery } from '@/api/protocol';
+
 test('complete tag directory supports curated sections and local global search', async ({
     page,
 }) => {
@@ -96,7 +98,7 @@ test('complete tag directory supports curated sections and local global search',
 test('one included tag remains a draft until Apply filters and restores from its URL', async ({
     page,
 }) => {
-    const catalog: any[] = [];
+    const catalog: IVndbQuery[] = [];
     await page.route('https://api.vndb.org/kana/vn', (route) => {
         const query = route.request().postDataJSON();
         catalog.push(query);
@@ -144,7 +146,7 @@ test('one included tag remains a draft until Apply filters and restores from its
     await expect(page).toHaveURL(/\/$/);
     await page.getByRole('button', { name: 'Apply filters' }).click();
     await expect(page.getByRole('heading', { name: 'Romantic story' })).toBeVisible();
-    expect(catalog.at(-1).filters).toEqual(['tag', '=', ['g96', 0, 0]]);
+    expect(catalog.at(-1)!.filters).toEqual(['tag', '=', ['g96', 0, 0]]);
     await expect(page).toHaveURL(/tag=g96/);
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Romantic story' })).toBeVisible();

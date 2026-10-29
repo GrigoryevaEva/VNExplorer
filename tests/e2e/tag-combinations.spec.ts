@@ -1,9 +1,11 @@
 import { expect, test } from '@playwright/test';
 
+import type { IVndbQuery } from '@/api/protocol';
+
 test('included combinations use strict all or any, and always exclude unwanted tags before paging', async ({
     page,
 }) => {
-    const requests: any[] = [];
+    const requests: IVndbQuery[] = [];
     await page.route('https://api.vndb.org/kana/vn', (route) => {
         const query = route.request().postDataJSON();
         requests.push(query);
@@ -12,7 +14,10 @@ test('included combinations use strict all or any, and always exclude unwanted t
             { id: 'v2', title: 'Fantasy without romance', tags: ['g2'] },
             { id: 'v3', title: 'Violent fantasy romance', tags: ['g2', 'g96', 'g3'] },
         ];
-        function matches(predicate: any[], tags: string[]): boolean {
+        const matches = (predicate: unknown, tags: string[]): boolean => {
+            if (!Array.isArray(predicate)) {
+                throw new Error('Expected a predicate array in the Catalog request');
+            }
             if (!predicate.length) {
                 return true;
             }
@@ -22,10 +27,17 @@ test('included combinations use strict all or any, and always exclude unwanted t
             if (predicate[0] === 'or') {
                 return predicate.slice(1).some((child) => matches(child, tags));
             }
+            if (
+                predicate[0] !== 'tag' ||
+                !Array.isArray(predicate[2]) ||
+                typeof predicate[2][0] !== 'string'
+            ) {
+                throw new Error('Expected a tag predicate in the Catalog request');
+            }
             return predicate[1] === '='
                 ? tags.includes(predicate[2][0])
                 : !tags.includes(predicate[2][0]);
-        }
+        };
         const results = stories
             .filter((story) => matches(query.filters, story.tags))
             .map(({ tags: _tags, ...story }) => ({ ...story, image: null }));
@@ -55,7 +67,7 @@ test('included combinations use strict all or any, and always exclude unwanted t
     expect(requests).toHaveLength(1);
     await page.getByRole('button', { name: 'Apply filters' }).click();
     await expect.poll(() => requests.length).toBe(2);
-    expect(requests.at(-1).filters).toEqual([
+    expect(requests.at(-1)!.filters).toEqual([
         'and',
         ['and', ['tag', '=', ['g2', 0, 0]], ['tag', '=', ['g96', 0, 0]]],
         ['tag', '!=', ['g3', 0, 0]],
@@ -65,7 +77,7 @@ test('included combinations use strict all or any, and always exclude unwanted t
     await page.getByRole('checkbox', { name: 'Strict match' }).uncheck();
     await page.getByRole('button', { name: 'Apply filters' }).click();
     await expect.poll(() => requests.length).toBe(3);
-    expect(requests.at(-1).filters).toEqual([
+    expect(requests.at(-1)!.filters).toEqual([
         'and',
         ['or', ['tag', '=', ['g2', 0, 0]], ['tag', '=', ['g96', 0, 0]]],
         ['tag', '!=', ['g3', 0, 0]],
@@ -78,7 +90,7 @@ test('included combinations use strict all or any, and always exclude unwanted t
     await page.getByRole('button', { name: 'Remove included tag Fantasy' }).click();
     await page.getByRole('button', { name: 'Remove included tag Romance' }).click();
     await page.getByRole('button', { name: 'Apply filters' }).click();
-    await expect.poll(() => requests.at(-1).filters).toEqual(['tag', '!=', ['g3', 0, 0]]);
+    await expect.poll(() => requests.at(-1)!.filters).toEqual(['tag', '!=', ['g3', 0, 0]]);
     const beforeClear = requests.length;
     await page.getByRole('button', { name: 'Remove excluded tag Violence' }).click();
     await page.getByRole('button', { name: 'Apply filters' }).click();
@@ -90,7 +102,7 @@ test('included combinations use strict all or any, and always exclude unwanted t
 test('opposite actions replace and toggle while sort, page, and title submission preserve pending filters', async ({
     page,
 }) => {
-    const requests: any[] = [];
+    const requests: IVndbQuery[] = [];
     await page.route('https://api.vndb.org/kana/vn', (route) => {
         requests.push(route.request().postDataJSON());
         return route.fulfill({
@@ -148,7 +160,7 @@ test('opposite actions replace and toggle while sort, page, and title submission
     await page.getByRole('searchbox', { name: 'Search titles' }).fill('Alias');
     await page.getByRole('button', { name: 'Search', exact: true }).click();
     await expect.poll(() => requests.length).toBe(4);
-    expect(requests.at(-1).filters).toEqual([
+    expect(requests.at(-1)!.filters).toEqual([
         'and',
         ['search', '=', 'Alias'],
         ['tag', '=', ['g96', 0, 0]],
@@ -169,7 +181,7 @@ test('opposite actions replace and toggle while sort, page, and title submission
     await expect(page.getByRole('radio', { name: 'English', exact: true })).toBeChecked();
     await page.getByRole('button', { name: 'Apply filters' }).click();
     await expect.poll(() => requests.length).toBe(5);
-    expect(requests.at(-1).filters).toEqual([
+    expect(requests.at(-1)!.filters).toEqual([
         'and',
         ['search', '=', 'Alias'],
         ['tag', '=', ['g2', 0, 0]],
@@ -198,7 +210,7 @@ test.describe('touch tag combinations', () => {
     test('mobile draft exclusions and match mode apply together and filter recovery clears them all', async ({
         page,
     }) => {
-        const requests: any[] = [];
+        const requests: IVndbQuery[] = [];
         await page.route('https://api.vndb.org/kana/vn', (route) => {
             const query = route.request().postDataJSON();
             requests.push(query);
@@ -236,7 +248,7 @@ test.describe('touch tag combinations', () => {
         await expect(page).toHaveURL(/exclude=g96&strict=0/);
         await page.getByRole('button', { name: 'Show without filters' }).tap();
         await expect(page).toHaveURL(/\/?q=story$/);
-        await expect.poll(() => requests.at(-1).filters).toEqual(['search', '=', 'story']);
+        await expect.poll(() => requests.at(-1)!.filters).toEqual(['search', '=', 'story']);
         await page.getByRole('button', { name: 'Filters', exact: true }).tap();
         await expect(page.getByRole('checkbox', { name: 'Strict match' })).toBeChecked();
         await expect(page.getByRole('button', { name: 'Remove excluded tag Romance' })).toHaveCount(

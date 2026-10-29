@@ -1,9 +1,11 @@
 import { expect, test } from '@playwright/test';
 
+import type { IVndbQuery } from '@/api/protocol';
+
 test('submitted alternative title search, sorting and numbered pages preserve applied selection', async ({
     page,
 }) => {
-    const requests: any[] = [];
+    const requests: IVndbQuery[] = [];
     await page.route('https://api.vndb.org/kana/vn', async (route) => {
         const query = route.request().postDataJSON();
         requests.push(query);
@@ -31,13 +33,13 @@ test('submitted alternative title search, sorting and numbered pages preserve ap
     expect(requests).toHaveLength(1);
     await page.getByRole('searchbox', { name: 'Search titles' }).press('Enter');
     await expect(page.getByRole('heading', { name: 'Steins;Gate page 1' })).toBeVisible();
-    expect(requests.at(-1).filters).toEqual(['search', '=', 'シュタインズ・ゲート']);
+    expect(requests.at(-1)!.filters).toEqual(['search', '=', 'シュタインズ・ゲート']);
     await expect(page).toHaveURL(/q=/);
     await page.getByRole('searchbox', { name: 'Search titles' }).fill('unsubmitted draft');
     await page.getByRole('combobox', { name: 'Sort stories' }).selectOption('released');
-    await expect.poll(() => requests.at(-1).sort).toBe('released');
+    await expect.poll(() => requests.at(-1)!.sort).toBe('released');
     await expect(page.getByRole('searchbox')).toHaveValue('unsubmitted draft');
-    expect(requests.at(-1).filters).toEqual(['search', '=', 'シュタインズ・ゲート']);
+    expect(requests.at(-1)!.filters).toEqual(['search', '=', 'シュタインズ・ゲート']);
     await page.getByRole('button', { name: 'Page 2', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Steins;Gate page 2' })).toBeVisible();
     await expect(page).toHaveURL(/page=2/);

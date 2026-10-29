@@ -38,8 +38,7 @@ tag descriptions use this renderer. There is no new markup language or product c
 The old detail/description implementations and unused catalog compatibility entries are removed.
 The gallery consumes the entity screenshot type directly; task 08 moved it to
 components/screenshots with the lifecycle described in refactoring-screenshots.md.
-Task 07 moved common partial-date formatting to shared/utils/dates and removed the final formatter compatibility entry. Remaining unrelated quality exceptions stay
-with their owning tasks and are removed completely in 11.
+Task 07 moved common partial-date formatting to shared/utils/dates and removed the final formatter compatibility entry. Task 11 removed the remaining test quality exemptions.
 
 Tests cover the public details HTTP boundary, pure presentation/parser contracts, existing safe
 description rendering, browser tag/keyboard/touch/history behavior and an abandoned request

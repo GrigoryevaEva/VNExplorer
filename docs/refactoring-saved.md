@@ -29,8 +29,8 @@ older refresh cannot update the page. No request is made for each saved row or s
 `components/saved` owns Save/Saved and the global error/Undo notice. Catalog and Saved
 supply the action through the card's slot; the card no longer imports the collection.
 The Details screen uses the same action. The old collection module, refresh entry point,
-SaveButton and SavedPage entry are removed after moving all consumers. Remaining old UI
-and Details compatibility are finished by their respective tickets and final cleanup.
+SaveButton and SavedPage entry are removed after moving all consumers. The remaining UI
+and Details migrations and the final compatibility cleanup are also complete.
 
 Validation covers legacy records, refused reads/writes, corruption protection, original
 Undo dates, snapshot-write failure, readonly state/getters, registered/hydrated Pinia
