@@ -1,17 +1,36 @@
 <script setup lang="ts">
     import { ref, watch } from 'vue';
+
+    import { SCREENSHOT_IMAGE_MESSAGES } from './constants';
+
+    type TImageState = 'loading' | 'loaded' | 'failed';
+
     const props = defineProps<{
         src: string;
         alt: string;
         dims: [number, number];
         lazy?: boolean;
     }>();
-    const state = ref<'loading' | 'loaded' | 'failed'>('loading');
+    const image = ref<HTMLImageElement>();
+    const state = ref<TImageState>('loading');
+
+    const loaded = (event: Event): void => {
+        if (event.currentTarget === image.value) {
+            state.value = 'loaded';
+        }
+    };
+    const failed = (event: Event): void => {
+        if (event.currentTarget === image.value) {
+            state.value = 'failed';
+        }
+    };
+
     watch(
         () => props.src,
-        () => {
-            state.value = 'loading';
-        }
+        (src) => {
+            state.value = src ? 'loading' : 'failed';
+        },
+        { immediate: true }
     );
 </script>
 
@@ -19,19 +38,21 @@
     <div class="screenshot-image">
         <img
             v-if="state !== 'failed'"
+            ref="image"
+            :key="src"
             :src="src"
             :alt="alt"
             :width="dims[0]"
             :height="dims[1]"
             :loading="lazy ? 'lazy' : 'eager'"
-            @load="state = 'loaded'"
-            @error="state = 'failed'"
+            @load="loaded"
+            @error="failed"
         />
         <span
             v-if="state !== 'loaded'"
             role="status"
             class="image-message"
-            >{{ state === 'failed' ? 'Screenshot unavailable' : 'Loading screenshot…' }}</span
+            >{{ SCREENSHOT_IMAGE_MESSAGES[state] }}</span
         >
     </div>
 </template>

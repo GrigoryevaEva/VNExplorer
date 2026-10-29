@@ -12,8 +12,6 @@ const legacyFiles = [
     'src/ui/CacheNotice.vue',
     'src/ui/CoverImage.vue',
     'src/ui/LanguageFilter.vue',
-    'src/ui/ScreenshotGallery.vue',
-    'src/ui/ScreenshotImage.vue',
 ];
 
 export default ts.config(
@@ -135,7 +133,7 @@ export default ts.config(
         },
     },
     {
-        files: ['tests/e2e/gallery.spec.ts', 'tests/e2e/tag-combinations.spec.ts'],
+        files: ['tests/e2e/tag-combinations.spec.ts'],
         rules: { 'func-style': 'off' },
     },
     // Disable formatting conflicts after all presets and overrides. Re-enable
