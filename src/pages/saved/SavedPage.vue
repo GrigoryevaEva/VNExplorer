@@ -1,7 +1,7 @@
 <script setup lang="ts">
     import { SaveButton } from '@/components/saved';
-    import CacheNotice from '@/ui/CacheNotice.vue';
-    import NovelCard from '@/ui/NovelCard.vue';
+    import { NovelCard, NovelGrid } from '@/components/visual-novel';
+    import { CacheNotice } from '@/components/vndb-feedback';
 
     import { useSavedPage } from './useSavedPage';
     const {
@@ -21,7 +21,7 @@
         class="saved-page"
         aria-label="Saved visual novels"
     >
-        <header class="catalog-heading"
+        <header class="page-heading"
             ><div
                 ><p class="eyebrow">KEPT FOR ANOTHER CHAPTER</p
                 ><h1>Your <span>Saved.</span></h1></div
@@ -61,7 +61,7 @@
         >
         <div
             v-else
-            class="catalog-results"
+            class="scroll-region"
             role="region"
             aria-label="Saved results"
             tabindex="0"
@@ -69,14 +69,13 @@
                 v-if="!novels.length"
                 class="feed-message"
                 ><h2>No saved stories match.</h2><p>Try another title or clear your search.</p></div
-            ><div
-                v-else
-                class="novel-grid"
+            ><NovelGrid v-else
                 ><NovelCard
                     v-for="novel in novels"
                     :key="novel.id"
                     :novel="novel"
-                    ><template #actions><SaveButton :novel="novel" /></template></NovelCard></div
+                    ><template #actions
+                        ><SaveButton :novel="novel" /></template></NovelCard></NovelGrid
         ></div>
     </section>
 </template>
@@ -93,15 +92,15 @@
     .saved-toolbar {
         display: flex;
         align-items: end;
-        gap: 20px;
-        padding-bottom: 16px;
+        gap: var(--space-lg);
+        padding-bottom: var(--space-md);
         border-bottom: 1px solid var(--line);
     }
 
     .saved-toolbar label {
         display: grid;
-        gap: 8px;
-        font-size: 11px;
+        gap: var(--space-xs);
+        font-size: var(--font-size-xs);
         color: var(--muted);
     }
 
@@ -113,16 +112,16 @@
     .saved-toolbar select {
         min-width: 0;
         max-width: 100%;
-        padding: 12px;
+        padding: var(--space-sm);
         color: var(--mint);
         background: var(--panel);
         border: 1px solid var(--line);
-        border-radius: 10px;
+        border-radius: var(--radius-control);
     }
 
     .saved-refresh {
-        margin-top: 12px;
-        font-size: 12px;
+        margin-top: var(--space-sm);
+        font-size: var(--font-size-sm);
         line-height: 1.5;
         color: var(--muted);
     }

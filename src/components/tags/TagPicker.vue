@@ -5,6 +5,7 @@
     import { useEventListener } from '@vueuse/core';
 
     import { VNDB_SITE_URL } from '@/api/protocol';
+    import { CacheNotice } from '@/components/vndb-feedback';
     import type { TCatalogTagAction } from '@/entities/catalog';
     import { CATALOG_TAG_ACTIONS } from '@/entities/catalog';
     import {
@@ -15,7 +16,6 @@
     } from '@/entities/tag';
     import { SourceDescription } from '@/shared/ui/source-description';
     import { useTagsStore } from '@/stores/tags';
-    import CacheNotice from '@/ui/CacheNotice.vue';
 
     import { TAG_DESCRIPTION_FALLBACK } from './constants';
 
@@ -166,7 +166,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
+        gap: var(--space-sm);
     }
 
     h2 {
@@ -177,8 +177,8 @@
 
     .tag-search {
         display: grid;
-        gap: 8px;
-        font-size: 12px;
+        gap: var(--space-xs);
+        font-size: var(--font-size-sm);
         color: var(--muted);
     }
 
@@ -189,7 +189,7 @@
         color: #fff;
         background: var(--panel);
         border: 1px solid var(--line);
-        border-radius: 10px;
+        border-radius: var(--radius-control);
     }
 
     nav {
@@ -199,8 +199,8 @@
     }
 
     nav button {
-        padding: 12px;
-        font-size: 12px;
+        padding: var(--space-sm);
+        font-size: var(--font-size-sm);
         color: var(--mint);
         background: var(--panel);
         border-radius: 8px 8px 2px;
@@ -219,7 +219,7 @@
 
     .tag-count {
         margin-bottom: 15px;
-        font-size: 12px;
+        font-size: var(--font-size-sm);
         color: var(--muted);
     }
 
@@ -276,7 +276,7 @@
 
     .tag-description {
         padding: 12px 0;
-        font-size: 13px;
+        font-size: var(--font-size-body);
         line-height: 1.6;
         white-space: pre-line;
         overflow-wrap: anywhere;
@@ -289,7 +289,7 @@
             max-width: none;
             height: calc(100dvh - 16px);
             max-height: none;
-            padding: 16px;
+            padding: var(--space-md);
         }
 
         .tag-picker[open] {
@@ -302,7 +302,7 @@
 
         nav button {
             padding: 10px;
-            font-size: 11px;
+            font-size: var(--font-size-xs);
         }
 
         .tag-row {
@@ -310,7 +310,7 @@
         }
 
         strong {
-            font-size: 12px;
+            font-size: var(--font-size-sm);
         }
     }
 

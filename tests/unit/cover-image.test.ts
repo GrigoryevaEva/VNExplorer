@@ -2,7 +2,7 @@
 import { mount } from '@vue/test-utils';
 import { expect, it } from 'vitest';
 
-import CoverImage from '@/ui/CoverImage.vue';
+import { CoverImage } from '@/components/visual-novel';
 
 it('replaces a failed cover with an accessible fallback and retries a changed source', async () => {
     const cover = mount(CoverImage, {

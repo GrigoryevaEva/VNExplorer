@@ -77,8 +77,8 @@
         inset: 0;
         display: grid;
         place-items: center;
-        padding: 12px;
-        font-size: 12px;
+        padding: var(--space-sm);
+        font-size: var(--font-size-sm);
         text-align: center;
         color: var(--muted);
         background: var(--panel);

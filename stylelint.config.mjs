@@ -14,15 +14,6 @@ export default {
     ],
     overrides: [
         {
-            // Preserve the existing global cascade until its UI migration in 09.
-            // Remove this compatibility override no later than ticket 11.
-            files: ['src/styles/theme.css'],
-            rules: {
-                'no-descending-specificity': null,
-                'no-duplicate-selectors': null,
-            },
-        },
-        {
             files: ['**/*.vue'],
             customSyntax: 'postcss-html',
             rules: {

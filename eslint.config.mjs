@@ -5,15 +5,6 @@ import vue from 'eslint-plugin-vue';
 import globals from 'globals';
 import ts from 'typescript-eslint';
 
-// Explicit baseline files only: new files always receive the target rules.
-// Remove this list and the associated override in migration ticket 11.
-const legacyFiles = [
-    'src/app/router.ts',
-    'src/ui/CacheNotice.vue',
-    'src/ui/CoverImage.vue',
-    'src/ui/LanguageFilter.vue',
-];
-
 export default ts.config(
     {
         ignores: [
@@ -87,14 +78,6 @@ export default ts.config(
                 },
             ],
             'vue/block-order': ['error', { order: ['script', 'template', 'style'] }],
-        },
-    },
-    {
-        files: legacyFiles,
-        rules: {
-            '@typescript-eslint/naming-convention': 'off',
-            'func-style': 'off',
-            'no-nested-ternary': 'off',
         },
     },
     // Existing standalone MJS utilities are migrated deliberately in ticket 10.

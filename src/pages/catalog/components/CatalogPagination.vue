@@ -43,6 +43,30 @@
     >
 </template>
 <style scoped>
+    .catalog-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: var(--font-size-caption);
+        color: var(--muted);
+        border-top: 1px solid var(--line);
+    }
+
+    @media (width <= 760px) {
+        .catalog-footer {
+            font-size: var(--font-size-micro);
+        }
+    }
+
+    @media (width <= 760px) {
+        .catalog-footer {
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+        }
+    }
+
     .catalog-pagination {
         display: flex;
         align-items: center;
@@ -55,7 +79,7 @@
         color: var(--muted);
         background: var(--panel);
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: var(--radius-small);
     }
 
     .catalog-pagination button[aria-current] {

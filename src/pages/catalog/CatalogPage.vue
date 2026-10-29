@@ -1,12 +1,12 @@
 <script setup lang="ts">
     import { SaveButton } from '@/components/saved';
     import { TagPicker } from '@/components/tags';
+    import { NovelCard, NovelGrid } from '@/components/visual-novel';
+    import { CacheNotice } from '@/components/vndb-feedback';
     import { selectionWithoutFilters } from '@/entities/catalog';
-    import CacheNotice from '@/ui/CacheNotice.vue';
-    import LanguageFilter from '@/ui/LanguageFilter.vue';
-    import NovelCard from '@/ui/NovelCard.vue';
 
     import CatalogPagination from './components/CatalogPagination.vue';
+    import LanguageFilter from './components/LanguageFilter.vue';
     import { useCatalog } from './useCatalog';
     const {
         tagsOpen,
@@ -48,7 +48,7 @@
         class="catalog-page"
         aria-label="Visual novel catalog"
     >
-        <header class="catalog-heading"
+        <header class="page-heading"
             ><div
                 ><p class="eyebrow">A WORLD BETWEEN THE LINES</p
                 ><h1>Find your next <span>story.</span></h1></div
@@ -98,7 +98,7 @@
                 </div>
                 <div
                     :ref="bindGrid"
-                    class="catalog-results"
+                    class="scroll-region"
                     role="region"
                     aria-label="Catalog results"
                     tabindex="0"
@@ -161,16 +161,14 @@
                         ><h2>No stories here yet.</h2
                         ><p>VNDB returned no matching stories. Try another title.</p></div
                     >
-                    <div
-                        v-else
-                        class="novel-grid"
+                    <NovelGrid v-else
                         ><NovelCard
                             v-for="(novel, index) in novels"
                             :key="novel.id"
                             :novel="novel"
                             :index="index"
                             ><template #actions><SaveButton :novel="novel" /></template></NovelCard
-                    ></div>
+                    ></NovelGrid>
                 </div>
                 <CatalogPagination
                     :current-page="applied.page"
@@ -318,11 +316,244 @@
 </template>
 
 <style scoped>
+    .catalog-page {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 29px;
+        height: 100%;
+        padding: 30px 38px 0;
+    }
+
+    .chapter-stamp {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 173px;
+        height: 95px;
+        margin: 0 27px;
+        border: 1px solid #656c5d;
+        border-radius: 50%;
+        transform: rotate(-8deg);
+    }
+
+    .chapter-stamp span {
+        font-size: var(--font-size-tiny);
+        letter-spacing: 1px;
+    }
+
+    .chapter-stamp strong {
+        font-size: 29px;
+        font-style: italic;
+        line-height: 1.1;
+        letter-spacing: -1px;
+        color: var(--pink);
+    }
+
+    .catalog-workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 265px;
+        gap: 27px;
+        min-height: 0;
+    }
+
+    .catalog-feed {
+        display: grid;
+        grid-template-rows: 72px minmax(0, 1fr) 61px;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    .catalog-toolbar {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .catalog-sidebar {
+        min-height: 0;
+        padding-bottom: var(--space-lg);
+        overflow: auto;
+        scrollbar-width: thin;
+    }
+
+    .selection-card {
+        padding: 25px 22px;
+        color: #1b241c;
+        background: var(--mint);
+        border-radius: 20px 20px 5px;
+    }
+
+    .selection-card .eyebrow {
+        font-size: var(--font-size-micro);
+        letter-spacing: 1.2px;
+        color: var(--mint-ink);
+    }
+
+    .selection-card h2 {
+        margin-top: 22px;
+        font-size: 32px;
+        line-height: 1.06;
+        letter-spacing: -1.4px;
+    }
+
+    .selection-card dl {
+        margin: 24px 0 18px;
+    }
+
+    .selection-card dl > div {
+        padding: 14px 0;
+        border-top: 1px solid #7d9a8566;
+    }
+
+    .selection-card dt {
+        margin-bottom: 7px;
+        font-size: var(--font-size-micro);
+        color: #4b6050;
+    }
+
+    .selection-card dd {
+        display: flex;
+        justify-content: space-between;
+        margin: 0;
+        font-size: var(--font-size-sm);
+        font-weight: bold;
+    }
+
+    .selection-card__note span {
+        font-size: 22px;
+        line-height: 20px;
+    }
+
+    .selection-card dd span {
+        font-size: 17px;
+        line-height: 12px;
+    }
+
+    .selection-card__note {
+        display: flex;
+        gap: var(--space-xs);
+        padding-top: 15px;
+        font-size: var(--font-size-caption);
+        line-height: 1.5;
+        border-top: 1px solid #7d9a8566;
+    }
+
+    .reading-card {
+        position: relative;
+        margin-top: 15px;
+        padding: 19px 22px;
+        overflow: hidden;
+        color: #2a2027;
+        background: var(--pink);
+        border-radius: 5px 20px 20px;
+    }
+
+    .reading-card__flower {
+        display: block;
+        font-size: 73px;
+        line-height: 1;
+        text-align: right;
+    }
+
+    .reading-card p {
+        margin-top: 5px;
+        font-size: 25px;
+        line-height: 1.06;
+        letter-spacing: -1px;
+    }
+
+    .reading-card p strong {
+        font-weight: 800;
+    }
+
+    .reading-card__bottom {
+        display: block;
+        margin-top: 22px;
+        padding-top: 13px;
+        font-size: var(--font-size-tiny);
+        letter-spacing: 0.9px;
+        border-top: 1px solid #a6779466;
+    }
+
+    .source-note {
+        padding: 16px 4px;
+        font-size: var(--font-size-micro);
+        color: var(--muted);
+    }
+
+    .source-note a {
+        text-decoration: none;
+        color: #d9dfd1;
+    }
+
+    @media (width >= 1700px) {
+        .catalog-page {
+            padding-right: 50px;
+            padding-left: 50px;
+        }
+
+        .catalog-workspace {
+            grid-template-columns: minmax(0, 1fr) 290px;
+            gap: 32px;
+        }
+    }
+
+    @media (width <= 1050px) {
+        .catalog-workspace {
+            grid-template-columns: minmax(0, 1fr) 225px;
+            gap: var(--space-lg);
+        }
+
+        .catalog-page {
+            padding: 25px 24px 0;
+        }
+
+        .selection-card {
+            padding: 22px 18px;
+        }
+
+        .selection-card h2 {
+            font-size: 29px;
+        }
+
+        .reading-card {
+            padding: 18px;
+        }
+
+        .chapter-stamp {
+            margin-right: 0;
+        }
+    }
+
+    @media (width <= 760px) {
+        .catalog-page {
+            gap: 23px;
+            padding: 23px 17px 0;
+        }
+
+        .chapter-stamp,
+        .catalog-sidebar {
+            display: none;
+        }
+
+        .catalog-workspace {
+            display: block;
+        }
+
+        .catalog-feed {
+            grid-template-rows: 36px minmax(0, 1fr) 56px;
+            height: 100%;
+        }
+    }
+
     .tag-draft {
         display: grid;
         gap: 10px;
         margin: 20px 0;
-        font-size: 12px;
+        font-size: var(--font-size-sm);
     }
 
     .tag-chip {
@@ -331,7 +562,7 @@
         overflow-wrap: anywhere;
         color: inherit;
         background: #fff5;
-        border-radius: 8px;
+        border-radius: var(--radius-small);
     }
 
     .tag-browse {
@@ -339,16 +570,6 @@
         color: inherit;
         background: transparent;
         border: 1px solid #718775;
-    }
-
-    .visually-hidden {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        overflow: hidden;
-        white-space: nowrap;
-        clip-path: inset(50%);
     }
 
     .mobile-filters {
@@ -379,37 +600,33 @@
 
     .filter-close {
         float: right;
-        padding: 8px;
+        padding: var(--space-xs);
         color: inherit;
         background: transparent;
         border: 1px solid var(--line);
-        border-radius: 8px;
-    }
-
-    .catalog-feed {
-        grid-template-rows: 72px minmax(0, 1fr) 61px;
+        border-radius: var(--radius-small);
     }
 
     .catalog-toolbar--search {
         align-items: flex-start;
-        gap: 12px;
+        gap: var(--space-sm);
     }
 
     .catalog-search {
         display: flex;
         flex: 1;
-        gap: 8px;
+        gap: var(--space-xs);
         min-width: 0;
     }
 
     .catalog-search input {
         width: 100%;
         min-width: 0;
-        padding: 12px;
+        padding: var(--space-sm);
         color: inherit;
         background: var(--panel);
         border: 1px solid #66705c;
-        border-radius: 10px;
+        border-radius: var(--radius-control);
     }
 
     .catalog-search input:focus-visible,
@@ -422,11 +639,11 @@
         max-width: 190px;
         height: 44px;
         padding: 12px 8px;
-        font-size: 12px;
+        font-size: var(--font-size-sm);
         color: var(--lime);
         background: var(--panel);
         border: 1px solid var(--line);
-        border-radius: 10px;
+        border-radius: var(--radius-control);
     }
 
     @media (width <= 760px) {
@@ -434,7 +651,7 @@
             display: inline-flex;
             min-height: 32px;
             padding: 5px 12px;
-            font-size: 11px;
+            font-size: var(--font-size-xs);
         }
 
         .catalog-feed {
@@ -443,7 +660,7 @@
 
         .catalog-toolbar--search {
             flex-wrap: wrap;
-            gap: 8px;
+            gap: var(--space-xs);
             margin-bottom: 10px;
         }
 
@@ -452,24 +669,18 @@
         }
 
         .catalog-search input {
-            font-size: 12px;
+            font-size: var(--font-size-sm);
         }
 
         .catalog-search .button {
-            gap: 8px;
-            padding: 12px;
+            gap: var(--space-xs);
+            padding: var(--space-sm);
         }
 
         .catalog-order select {
             height: 32px;
             padding: 5px 8px;
-            font-size: 11px;
-        }
-
-        .catalog-footer {
-            flex-direction: column;
-            justify-content: center;
-            gap: 5px;
+            font-size: var(--font-size-xs);
         }
     }
 </style>
