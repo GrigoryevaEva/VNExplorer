@@ -37,8 +37,7 @@ tag descriptions use this renderer. There is no new markup language or product c
 
 The old detail/description implementations and unused catalog compatibility entries are removed.
 The gallery consumes the entity screenshot type directly (full lifecycle migration is task 08).
-`modules/vndb/format.ts` only re-exports pure presentation for the legacy release component until
-task 07; it contains no second formatter or model. Remaining unrelated quality exceptions stay
+Task 07 moved common partial-date formatting to shared/utils/dates and removed the final formatter compatibility entry. Remaining unrelated quality exceptions stay
 with their owning tasks and are removed completely in 11.
 
 Tests cover the public details HTTP boundary, pure presentation/parser contracts, existing safe

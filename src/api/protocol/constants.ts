@@ -6,6 +6,7 @@ export const VNDB_FIELDS = {
     SEARCH: 'search',
     TAG: 'tag',
     RELEASE: 'release',
+    NOVEL: 'vn',
     LANGUAGE: 'lang',
     RELEASED: 'released',
 } as const;

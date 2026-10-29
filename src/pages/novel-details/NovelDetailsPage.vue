@@ -1,11 +1,12 @@
 <script setup lang="ts">
     import { VNDB_SITE_URL } from '@/api/protocol';
+    import { ReleaseGroups } from '@/components/releases';
     import { SaveButton } from '@/components/saved';
-    import { formatPlayTime, formatRating, formatReleaseDate } from '@/entities/visual-novel';
+    import { formatPlayTime, formatRating } from '@/entities/visual-novel';
     import { SourceDescription } from '@/shared/ui/source-description';
+    import { formatReleaseDate } from '@/shared/utils/dates';
     import CacheNotice from '@/ui/CacheNotice.vue';
     import CoverImage from '@/ui/CoverImage.vue';
-    import ReleaseGroups from '@/ui/ReleaseGroups.vue';
     import ScreenshotGallery from '@/ui/ScreenshotGallery.vue';
 
     import { catalogTagQuery, useNovelDetails } from './useNovelDetails';

@@ -9,11 +9,9 @@ import ts from 'typescript-eslint';
 // Remove this list and the associated override in migration ticket 11.
 const legacyFiles = [
     'src/app/router.ts',
-    'src/modules/vndb/releases.ts',
     'src/ui/CacheNotice.vue',
     'src/ui/CoverImage.vue',
     'src/ui/LanguageFilter.vue',
-    'src/ui/ReleaseGroups.vue',
     'src/ui/ScreenshotGallery.vue',
     'src/ui/ScreenshotImage.vue',
 ];
