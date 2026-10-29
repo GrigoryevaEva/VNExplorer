@@ -23,6 +23,7 @@ jobs:
             - run: npm run format:check
             - run: npm run typecheck
             - run: npm run test:unit
+            - run: npm run test:automation
             - name: Require this branch's changeset
               env:
                   PR_BASE: ${{ github.event.pull_request.base.sha }}
@@ -33,14 +34,11 @@ jobs:
                   if [ -z "$base" ] || [[ "$base" =~ ^0+$ ]]; then base=$(git rev-list --max-parents=0 HEAD); fi
                   npm run changeset:check -- "$base"
             - run: npm run build
+            - run: npx playwright install --with-deps chromium
             - name: Browser checks
-              run: |
-                  if node -e "process.exit(JSON.parse(require('fs').readFileSync('package.json')).scripts['test:e2e'] ? 0 : 1)"; then
-                    npx playwright install --with-deps chromium
-                    npm run test:e2e
-                  fi
+              run: npm run test:e2e
             - name: Production route smoke
-              run: npm run test:static
+              run: npm run test:production
             - uses: actions/upload-artifact@v4
               if: failure()
               with:

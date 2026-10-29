@@ -80,31 +80,6 @@ export default ts.config(
             'vue/block-order': ['error', { order: ['script', 'template', 'style'] }],
         },
     },
-    // Existing standalone MJS utilities are migrated deliberately in ticket 10.
-    {
-        files: [
-            'scripts/changesets.mjs',
-            'scripts/check-changeset.mjs',
-            'scripts/release-notes.mjs',
-            'scripts/smoke-details.mjs',
-            'scripts/smoke-handoff-live.mjs',
-            'scripts/smoke-language.mjs',
-            'scripts/smoke-search-navigation.mjs',
-            'scripts/smoke-static.mjs',
-            'scripts/smoke-tags.mjs',
-            'scripts/smoke-vndb.mjs',
-            'scripts/tag-release.mjs',
-        ],
-        rules: { 'func-style': 'off' },
-    },
-    {
-        files: ['scripts/smoke-static.mjs'],
-        rules: { 'no-nested-ternary': 'off' },
-    },
-    {
-        files: ['scripts/smoke-handoff-live.mjs'],
-        languageOptions: { globals: { window: 'readonly' } },
-    },
     {
         files: [
             'tests/e2e/search-navigation.spec.ts',

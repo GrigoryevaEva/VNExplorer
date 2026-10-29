@@ -26,6 +26,7 @@ npm run lint:styles
 npm run format:check
 npm run typecheck
 npm run test:unit
+npm run test:automation
 npx playwright install chromium
 npm run test:e2e
 npm run test:static
@@ -37,7 +38,11 @@ for explicit corrections; `test:unit:watch` runs Vitest interactively. The `@/` 
 jsdom. Playwright remains a separate browser suite. See [quality and migration notes](docs/refactoring-quality.md)
 for the rules, tool ownership and temporary exceptions scheduled for removal in task 11.
 
-`test:static` typechecks and builds, then serves only generated files through a test SPA fallback. It checks `/` and a separately built `/novels/` base, direct detail/Saved links, refresh, assets and the full Catalog → detail/gallery/releases → Saved → Catalog flow. HTTP-edge fixtures make these checks deterministic. `npm run test:live` performs a small real-browser VNDB check; `npm run test:handoff-live` adds title-alias/page/count/detail evidence. Live checks depend on VNDB availability and limits; they are not part of the repeatable suite. Screenshots from static checks are written to `test-results/static-handoff/` (override with `SMOKE_ARTIFACT_DIR`).
+`test:static` builds, then serves only generated files through a test SPA fallback. It checks `/` and a separately built `/novels/` base, direct detail/Saved links, refresh, assets and the full Catalog → detail/gallery/releases → Saved → Catalog flow. HTTP-edge fixtures make these checks deterministic.
+
+`test:production` runs the same smoke against an existing `dist` (and builds its subpath fixture). `test:automation` checks release CLIs only in temporary Git repositories and checks live-process cleanup without VNDB. `typecheck` includes a separate strict `typecheck:scripts`; executing native TypeScript scripts alone does not typecheck them.
+
+`npm run test:live` performs a small real-browser VNDB check; `npm run test:handoff-live` adds title-alias/page/count/detail evidence. All six live commands share a 24-request budget, a 120-second browser deadline and a 10-second startup deadline; tag probes use only two tiny pages. See [command responsibilities](docs/releasing.md#проверки-команд). Live checks depend on VNDB availability and limits; they are not part of the repeatable suite. Screenshots from static checks are written to `test-results/static-handoff/` (override with `SMOKE_ARTIFACT_DIR`).
 
 Use a separate `task/<name>` branch based on current `dev` for each task. Include a changeset with the change before merging back.
 

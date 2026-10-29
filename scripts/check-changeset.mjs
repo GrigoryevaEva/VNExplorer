@@ -1,15 +1,12 @@
-import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+
+import { git, readPackage } from './lib/release.mjs';
 
 const base = process.argv[2];
 if (!base || base.startsWith('-')) {
     throw new Error('Usage: npm run changeset:check -- <base-revision>');
 }
-const git = (...args) =>
-    execFileSync('git', ['-c', `safe.directory=${process.cwd()}`, ...args], {
-        encoding: 'utf8',
-    }).trim();
-const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+const pkg = readPackage();
 const names = git('diff', '--name-only', '--diff-filter=A', base, 'HEAD', '--', '.changeset').split(
     '\n'
 );

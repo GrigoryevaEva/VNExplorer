@@ -1,40 +1,27 @@
-import { chromium } from '@playwright/test';
-import { spawn } from 'node:child_process';
-const port = process.env.PLAYWRIGHT_PORT ?? '4176';
-const origin = `http://127.0.0.1:${port}`;
-const server = spawn(
-    process.execPath,
-    ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', port, '--strictPort'],
-    { stdio: 'pipe', windowsHide: true }
-);
+import { openLivePage, startDevServer } from './lib/live-browser.ts';
+
+const server = await startDevServer(process.env.PLAYWRIGHT_PORT ?? '4176');
+const origin = server.origin;
 let browser;
 try {
-    for (let attempt = 0; attempt < 40; attempt++) {
-        try {
-            if ((await fetch(origin)).ok) {
-                break;
-            }
-        } catch {
-            // The dev server may still be starting; retry until the bounded deadline.
-        }
-        await new Promise((resolve) => setTimeout(resolve, 250));
-    }
-    browser = await chromium.launch();
-    const page = await browser.newPage();
+    const live = await openLivePage();
+    browser = live.browser;
+    const page = live.page;
     await page.goto(`${origin}/?tag=g96`);
     await page.getByRole('heading', { name: 'Romantic story' }).count();
     const result = await page.evaluate(async () => {
-        async function query(endpoint, body) {
+        const query = async (endpoint, body) => {
             const response = await fetch(`https://api.vndb.org/kana/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                signal: AbortSignal.timeout(15_000),
                 body: JSON.stringify(body),
             });
             if (!response.ok) {
                 throw new Error(`${endpoint}: HTTP ${response.status}`);
             }
             return response.json();
-        }
+        };
         const tags = [];
         for (const page of [1, 2]) {
             tags.push(
@@ -65,6 +52,9 @@ try {
     });
     console.log(JSON.stringify(result));
 } finally {
-    await browser?.close();
-    server.kill();
+    try {
+        await browser?.close();
+    } finally {
+        await server.close();
+    }
 }

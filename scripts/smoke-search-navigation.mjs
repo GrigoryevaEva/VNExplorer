@@ -1,33 +1,12 @@
-import { chromium } from '@playwright/test';
-import { spawn } from 'node:child_process';
-const port = 4173;
-const base = `http://127.0.0.1:${port}`;
-const server = spawn(
-    process.execPath,
-    [
-        'node_modules/vite/bin/vite.js',
-        '--host',
-        '127.0.0.1',
-        '--port',
-        String(port),
-        '--strictPort',
-    ],
-    { stdio: 'pipe', windowsHide: true }
-);
+import { openLivePage, startDevServer } from './lib/live-browser.ts';
+
+const server = await startDevServer(process.env.PLAYWRIGHT_PORT ?? '4173');
+const base = server.origin;
 let browser;
 try {
-    for (let attempt = 0; attempt < 40; attempt++) {
-        try {
-            if ((await fetch(base)).ok) {
-                break;
-            }
-        } catch {
-            // The dev server may still be starting; retry until the bounded deadline.
-        }
-        await new Promise((resolve) => setTimeout(resolve, 250));
-    }
-    browser = await chromium.launch();
-    const page = await browser.newPage({ viewport: { width: 1440, height: 1050 } });
+    const live = await openLivePage({ width: 1440, height: 1050 });
+    browser = live.browser;
+    const page = live.page;
     const responsePromise = page.waitForResponse(
         (response) => response.url() === 'https://api.vndb.org/kana/vn'
     );
@@ -50,6 +29,7 @@ try {
             const response = await fetch('https://api.vndb.org/kana/vn', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                signal: AbortSignal.timeout(15_000),
                 body: JSON.stringify({
                     filters: ['search', '=', 'sakura'],
                     fields: 'title,released',
@@ -87,6 +67,9 @@ try {
         )
     );
 } finally {
-    await browser?.close();
-    server.kill();
+    try {
+        await browser?.close();
+    } finally {
+        await server.close();
+    }
 }

@@ -14,14 +14,14 @@ jobs:
                   node-version: 24
                   cache: npm
             - run: npm ci
+            - run: npm run typecheck
+            - run: npm run test:automation
+            - run: npx playwright install --with-deps chromium
             - name: Browser checks
-              run: |
-                  if node -e "process.exit(JSON.parse(require('fs').readFileSync('package.json')).scripts['test:e2e'] ? 0 : 1)"; then
-                    npx playwright install --with-deps chromium
-                    npm run test:e2e
-                  fi
-            - name: Build and production route smoke
-              run: npm run test:static
+              run: npm run test:e2e
+            - run: npm run build
+            - name: Production route smoke
+              run: npm run test:production
             - name: Assemble release
               run: |
                   node scripts/release-notes.mjs "$GITHUB_REF_NAME" > release-notes.md
