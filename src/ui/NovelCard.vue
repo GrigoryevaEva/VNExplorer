@@ -2,7 +2,8 @@
     import { onBeforeUnmount, onMounted, ref } from 'vue';
 
     import type { IVisualNovelCard } from '@/entities/visual-novel';
-    import { formatRating, formatReleaseDate } from '@/entities/visual-novel';
+    import { formatRating } from '@/entities/visual-novel';
+    import { formatReleaseDate } from '@/shared/utils/dates';
 
     import CoverImage from './CoverImage.vue';
     defineProps<{ novel: IVisualNovelCard; index?: number }>();

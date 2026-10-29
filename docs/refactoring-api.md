@@ -37,7 +37,7 @@ with their consumers. Cancellation has a dedicated predicate and is not displaye
 and response type names also re-export the protocol contracts. They contain no second
 transport, request map or cache. Scenario migrations in tasks 03–07 provide their concrete
 row schemas; task 11 removes the compatibility entry points after all consumers migrate.
-The release-record cache path must validate its concrete rows when migrating in task 07.
+The migrated api/releases owner validates concrete release-record DTOs before fresh or stale reuse; the old release path has been removed.
 Saved localStorage remains independent and is never accessed or cleared by response-cache code.
 
 Tests use MSW at the HTTP boundary and public `queryVndb` calls for validation, cache reuse,
