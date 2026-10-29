@@ -13,7 +13,7 @@ import {
 } from './constants';
 import type { IReleaseAssignment, IReleaseDetails, IReleaseLanguageGroup } from './types';
 
-export const releaseWebsites = (release: IReleaseDetails) =>
+export const releaseWebsites = (release: IReleaseDetails): IReleaseDetails['externalLinks'] =>
     release.externalLinks.filter((link, index, links) => {
         if (
             link.name !== RELEASE_SITE_KIND ||

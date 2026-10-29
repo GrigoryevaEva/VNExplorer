@@ -1,4 +1,5 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import type { LocationQueryRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
 
 import { isVndbCancellation } from '@/api/client';
@@ -11,7 +12,7 @@ import { selectionToQuery } from '@/pages/catalog/route';
 
 import { CATALOG_HISTORY_PATTERN, NOVEL_ID_PATTERN } from './constants';
 
-export const catalogTagQuery = (id: string) =>
+export const catalogTagQuery = (id: string): LocationQueryRaw =>
     selectionToQuery({ ...createCatalogSelection(), includedTags: [id] });
 
 export const useNovelDetails = () => {

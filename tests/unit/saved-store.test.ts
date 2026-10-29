@@ -62,6 +62,35 @@ it('keeps Save, remove and Undo truthful when browser writes fail', () => {
     expect(store.removedEntry?.novel.id).toBe('v1');
 });
 
+it('allows collection changes only through persistence-aware actions', () => {
+    const store = useSavedStore(pinia);
+    store.save(amber);
+    const persisted = localStorage.getItem('vndb-explorer:saved:v1');
+    const patch: unknown = Reflect.get(store, '$patch');
+    if (typeof patch === 'function') {
+        patch({ entries: [] });
+    }
+    expect(store.savedNovels).toEqual([amber]);
+    expect(localStorage.getItem('vndb-explorer:saved:v1')).toBe(persisted);
+    expect(patch).toBeUndefined();
+});
+
+it('does not expose mutable state through Pinia subscription or action hooks', () => {
+    const store = useSavedStore(pinia);
+    expect(Reflect.get(store, '$subscribe')).toBeUndefined();
+    expect(Reflect.get(store, '$onAction')).toBeUndefined();
+    expect(Reflect.get(store, '$reset')).toBeUndefined();
+    expectTypeOf(store.$patch).toEqualTypeOf<never>();
+    expectTypeOf(store.$subscribe).toEqualTypeOf<never>();
+    expect(store).toBe(useSavedStore(pinia));
+    store.save(amber);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    Reflect.set(store, '$state', { entries: [] });
+    Reflect.set(store.$state.entries[0]!.novel, 'title', 'Changed');
+    expect(store.savedNovels).toEqual([amber]);
+    expect(warn).toHaveBeenCalled();
+});
+
 it.each([
     '',
     '{broken',

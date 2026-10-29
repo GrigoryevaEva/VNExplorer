@@ -3,7 +3,9 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 
-export const createTemporaryDirectory = async (prefix: string) => {
+export const createTemporaryDirectory = async (
+    prefix: string
+): Promise<{ path: string; cleanup: () => Promise<void> }> => {
     assert(/^vndb-[a-z-]+-$/.test(prefix), 'Use an owned VNDB temporary directory prefix');
     const temporaryRoot = resolve(tmpdir());
     const path = await mkdtemp(join(temporaryRoot, prefix));

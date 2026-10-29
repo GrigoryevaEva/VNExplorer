@@ -1,7 +1,7 @@
 import type { LocationQuery, LocationQueryRaw } from 'vue-router';
 
 import type { ICatalogSelection } from '@/entities/catalog';
-import { CATALOG_MAX_PAGE } from '@/entities/catalog';
+import { CATALOG_LANGUAGES, CATALOG_MAX_PAGE, CATALOG_SORTS } from '@/entities/catalog';
 const first = (value: LocationQuery[string]) => (Array.isArray(value) ? value[0] : value);
 const tagIds = (value: LocationQuery[string]) =>
     [
@@ -20,8 +20,14 @@ export const selectionFromQuery = (query: LocationQuery): ICatalogSelection => {
         excludedTags,
         strictMatch: first(query.strict) !== '0',
         search: (first(query.q) ?? '').trim(),
-        language: language === 'ru' || language === 'en' ? language : 'all',
-        sort: first(query.sort) === 'released' ? 'released' : 'rating',
+        language:
+            language === CATALOG_LANGUAGES.RUSSIAN || language === CATALOG_LANGUAGES.ENGLISH
+                ? language
+                : CATALOG_LANGUAGES.ALL,
+        sort:
+            first(query.sort) === CATALOG_SORTS.RELEASED
+                ? CATALOG_SORTS.RELEASED
+                : CATALOG_SORTS.RATING,
         page: Number.isSafeInteger(page) && page > 0 ? Math.min(page, CATALOG_MAX_PAGE) : 1,
     };
 };
@@ -31,8 +37,8 @@ export const selectionToQuery = (selection: ICatalogSelection): LocationQueryRaw
         ...(selection.excludedTags.length ? { exclude: selection.excludedTags } : {}),
         ...(!selection.strictMatch ? { strict: '0' } : {}),
         ...(selection.search ? { q: selection.search } : {}),
-        ...(selection.language !== 'all' ? { language: selection.language } : {}),
-        ...(selection.sort !== 'rating' ? { sort: selection.sort } : {}),
+        ...(selection.language !== CATALOG_LANGUAGES.ALL ? { language: selection.language } : {}),
+        ...(selection.sort !== CATALOG_SORTS.RATING ? { sort: selection.sort } : {}),
         ...(selection.page > 1 ? { page: String(selection.page) } : {}),
     };
 };

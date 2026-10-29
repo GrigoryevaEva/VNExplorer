@@ -6,7 +6,7 @@ import { fetchCatalogSelection, fetchTitleMatchCount, needsTitleMatchCount } fro
 import { isVndbCancellation } from '@/api/client';
 import { vndbRequestMessage } from '@/components/vndb-feedback';
 import type { ICatalogSelection, TCatalogTagAction } from '@/entities/catalog';
-import { CATALOG_PAGE_SIZE, toggleCatalogTag } from '@/entities/catalog';
+import { CATALOG_LANGUAGES, CATALOG_PAGE_SIZE, toggleCatalogTag } from '@/entities/catalog';
 import type { IVisualNovelCard } from '@/entities/visual-novel';
 import { useTagsStore } from '@/stores/tags';
 
@@ -95,10 +95,10 @@ export const useCatalog = () => {
     });
 
     const selectionLanguageLabel = computed(() => {
-        if (applied.value.language === 'ru') {
+        if (applied.value.language === CATALOG_LANGUAGES.RUSSIAN) {
             return 'Russian';
         }
-        if (applied.value.language === 'en') {
+        if (applied.value.language === CATALOG_LANGUAGES.ENGLISH) {
             return 'English';
         }
         return 'All languages';

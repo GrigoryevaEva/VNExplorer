@@ -117,8 +117,35 @@ const useMutableSavedStore = defineStore(SAVED_STORE_ID, () => {
 
 type TSavedStore = ReturnType<typeof useMutableSavedStore>;
 type TReadonlySavedStore = Omit<TSavedStore, keyof TSavedStore['$state'] | '$state'> &
-    DeepReadonly<TSavedStore['$state']> & { readonly $state: DeepReadonly<TSavedStore['$state']> };
+    DeepReadonly<TSavedStore['$state']> & {
+        readonly $state: DeepReadonly<TSavedStore['$state']>;
+        readonly $patch: never;
+        readonly $reset: never;
+        readonly $subscribe: never;
+    };
 
-// As with the tags store, retain Pinia's markRaw metadata while making public state readonly.
-export const useSavedStore = (pinia?: Pinia): TReadonlySavedStore =>
-    readonly(useMutableSavedStore(pinia)) as unknown as TReadonlySavedStore;
+const facades = new WeakMap<TSavedStore, TReadonlySavedStore>();
+// Keep the registered store mutable for hydration/DevTools. Pinia infers getter
+// types through $onAction, whose original signature is a typing bridge only:
+// the hook is unavailable at runtime, alongside all other mutation escape APIs.
+export const useSavedStore = (pinia?: Pinia): TReadonlySavedStore => {
+    const store = useMutableSavedStore(pinia);
+    let facade = facades.get(store);
+    if (!facade) {
+        facade = new Proxy(readonly(store), {
+            get(target, key, receiver) {
+                if (
+                    key === '$patch' ||
+                    key === '$reset' ||
+                    key === '$subscribe' ||
+                    key === '$onAction'
+                ) {
+                    return undefined;
+                }
+                return Reflect.get(target, key, receiver);
+            },
+        }) as unknown as TReadonlySavedStore;
+        facades.set(store, facade);
+    }
+    return facade;
+};
