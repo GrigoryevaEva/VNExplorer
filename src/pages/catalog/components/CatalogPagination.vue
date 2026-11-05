@@ -53,13 +53,13 @@
         border-top: 1px solid var(--line);
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .catalog-footer {
             font-size: var(--font-size-micro);
         }
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .catalog-footer {
             flex-direction: column;
             justify-content: center;
@@ -93,7 +93,7 @@
         opacity: 0.35;
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .catalog-pagination {
             gap: 3px;
         }

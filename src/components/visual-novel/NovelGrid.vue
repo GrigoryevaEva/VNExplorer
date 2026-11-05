@@ -19,13 +19,13 @@
         }
     }
 
-    @media (width <= 1050px) {
+    @media (--viewport-compact) {
         .novel-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .novel-grid {
             --masonry-gap: var(--space-md);
 

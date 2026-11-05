@@ -74,7 +74,7 @@
                             ><dt>Rating</dt
                             ><dd class="detail-rating">{{ formatRating(novel.rating) }}</dd
                             ><p>{{
-                                novel.voteCount == null
+                                novel.voteCount === null || novel.voteCount === undefined
                                     ? 'Vote count unknown'
                                     : `${novel.voteCount.toLocaleString('en')} votes`
                             }}</p></div
@@ -287,7 +287,7 @@
         color: var(--muted);
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .detail-page {
             padding: 24px 18px 60px;
         }

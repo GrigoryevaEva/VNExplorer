@@ -10,9 +10,7 @@ test-results/
 .agents/
 .codex/
 .git/
-docs/archive/
-docs/agents/
-docs/adr/
+docs/
 AGENTS.md
 GLOSSARY.md
 package-lock.json

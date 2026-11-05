@@ -503,7 +503,7 @@
         }
     }
 
-    @media (width <= 1050px) {
+    @media (--viewport-compact) {
         .catalog-workspace {
             grid-template-columns: minmax(0, 1fr) 225px;
             gap: var(--space-lg);
@@ -530,7 +530,7 @@
         }
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .catalog-page {
             gap: 23px;
             padding: 23px 17px 0;
@@ -648,7 +648,7 @@
         border-radius: var(--radius-control);
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .mobile-filters {
             display: inline-flex;
             min-height: 32px;

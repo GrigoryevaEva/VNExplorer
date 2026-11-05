@@ -19,7 +19,7 @@ export default ts.config(
             '**/.scratch/**',
             '**/.agents/**',
             '**/.codex/**',
-            'docs/archive/**',
+            'docs/**',
         ],
     },
     js.configs.recommended,
@@ -83,5 +83,21 @@ export default ts.config(
     // Disable formatting conflicts after all presets and overrides. Re-enable
     // the compatible all-braces convention (Prettier's preset disables curly).
     prettier,
-    { rules: { curly: ['error', 'all'] } }
+    {
+        rules: {
+            curly: ['error', 'all'],
+            eqeqeq: ['error', 'always'],
+            'vue/eqeqeq': ['error', 'always'],
+        },
+    },
+    {
+        files: ['**/*.ts'],
+        rules: {
+            'padding-line-between-statements': [
+                'error',
+                { blankLine: 'always', prev: 'import', next: '*' },
+                { blankLine: 'any', prev: 'import', next: 'import' },
+            ],
+        },
+    }
 );

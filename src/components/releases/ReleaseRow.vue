@@ -137,7 +137,7 @@
         padding-left: 18px;
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .release-row {
             grid-template-columns: minmax(0, 1fr) auto;
             gap: 6px 12px;

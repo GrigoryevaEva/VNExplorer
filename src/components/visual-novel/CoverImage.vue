@@ -140,7 +140,7 @@
         }
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .cover-fallback {
             font-size: var(--font-size-micro);
         }

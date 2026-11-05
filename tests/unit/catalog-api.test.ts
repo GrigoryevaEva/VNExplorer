@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, expect, it } from 'vitest';
 
 import { fetchCatalogSelection } from '@/api/catalog';
 import { createCatalogSelection } from '@/entities/catalog';
+
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());

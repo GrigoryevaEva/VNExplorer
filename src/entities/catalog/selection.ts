@@ -1,4 +1,5 @@
 import { CATALOG_LANGUAGES, CATALOG_SORTS, CATALOG_TAG_ACTIONS } from './constants';
+
 export type TCatalogLanguage = (typeof CATALOG_LANGUAGES)[keyof typeof CATALOG_LANGUAGES];
 export type TCatalogSort = (typeof CATALOG_SORTS)[keyof typeof CATALOG_SORTS];
 export type TCatalogTagAction = (typeof CATALOG_TAG_ACTIONS)[keyof typeof CATALOG_TAG_ACTIONS];

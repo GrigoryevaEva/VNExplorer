@@ -9,6 +9,9 @@
     "singleAttributePerLine": true,
     "vueIndentScriptAndStyle": true,
     "htmlWhitespaceSensitivity": "strict",
+    "overrides": [
+        { "files": "src/app/App.vue", "options": { "htmlWhitespaceSensitivity": "ignore" } }
+    ],
     "endOfLine": "lf",
     "objectWrap": "preserve",
     "plugins": ["./tooling/prettier-destructuring.ts"]

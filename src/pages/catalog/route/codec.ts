@@ -2,6 +2,7 @@ import type { LocationQuery, LocationQueryRaw } from 'vue-router';
 
 import type { ICatalogSelection } from '@/entities/catalog';
 import { CATALOG_LANGUAGES, CATALOG_MAX_PAGE, CATALOG_SORTS } from '@/entities/catalog';
+
 const first = (value: LocationQuery[string]) => (Array.isArray(value) ? value[0] : value);
 const tagIds = (value: LocationQuery[string]) =>
     [

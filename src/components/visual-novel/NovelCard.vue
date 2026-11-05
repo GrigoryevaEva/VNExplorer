@@ -40,7 +40,7 @@
                 :src="novel.image?.thumbnail || novel.image?.url"
                 :title="novel.title"
             /><span
-                v-if="index != null"
+                v-if="index !== null && index !== undefined"
                 class="novel-card__number"
                 aria-hidden="true"
                 >{{ String(index + 1).padStart(2, '0') }}</span
@@ -53,9 +53,12 @@
                 ><span class="novel-card__date">{{ formatReleaseDate(novel.released) }}</span
                 ><span
                     class="novel-card__rating"
-                    :class="{ 'novel-card__rating--empty': novel.rating == null }"
+                    :class="{
+                        'novel-card__rating--empty':
+                            novel.rating === null || novel.rating === undefined,
+                    }"
                     ><span
-                        v-if="novel.rating != null"
+                        v-if="novel.rating !== null && novel.rating !== undefined"
                         aria-hidden="true"
                         >★</span
                     >
@@ -168,7 +171,7 @@
         color: #c0c6b8;
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .novel-card {
             border-radius: 12px;
         }

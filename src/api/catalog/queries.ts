@@ -8,6 +8,7 @@ import { CATALOG_LANGUAGES, CATALOG_PAGE_SIZE, selectionWithoutFilters } from '@
 import type { IVisualNovelCard } from '@/entities/visual-novel';
 
 import { RELEASE_AVAILABILITY, TAG_RATING_THRESHOLD, TAG_SPOILER_LEVEL } from './constants';
+
 export const compileCatalogQuery = (selection: ICatalogSelection): IVndbQuery => {
     const conditions: unknown[][] = [];
     if (selection.search) {

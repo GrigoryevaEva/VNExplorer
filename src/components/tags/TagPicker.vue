@@ -283,7 +283,7 @@
         color: var(--muted);
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .tag-picker {
             width: calc(100vw - 16px);
             max-width: none;

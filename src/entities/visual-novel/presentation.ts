@@ -8,8 +8,11 @@ import {
     SPOILER_FREE_LEVEL,
 } from './constants';
 import type { INovelTag, IVisualNovelDetails } from './types';
+
 export const formatRating = (value: number | null | undefined): string => {
-    return value == null ? RATING_UNKNOWN : (value / RATING_SCALE).toFixed(2);
+    return value === null || value === undefined
+        ? RATING_UNKNOWN
+        : (value / RATING_SCALE).toFixed(2);
 };
 
 export const spoilerFreeTags = (novel: IVisualNovelDetails): INovelTag[] =>

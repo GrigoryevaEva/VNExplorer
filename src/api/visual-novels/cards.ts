@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { IVisualNovelCard } from '@/entities/visual-novel';
+
 export const novelCardSchema = z.looseObject({
     id: z.string().regex(/^v[1-9]\d*$/),
     title: z.string(),

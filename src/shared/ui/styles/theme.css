@@ -162,7 +162,7 @@ p {
     filter: brightness(1.08);
 }
 
-@media (width <= 760px) {
+@media (--viewport-mobile) {
     .page-heading h1 {
         font-size: clamp(27px, 7vw, 42px);
         letter-spacing: -1.3px;
@@ -201,7 +201,7 @@ p {
     scrollbar-width: thin;
 }
 
-@media (width <= 760px) {
+@media (--viewport-mobile) {
     .scroll-region {
         padding-right: 3px;
     }

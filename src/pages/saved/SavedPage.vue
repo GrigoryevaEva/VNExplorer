@@ -133,7 +133,7 @@
         background: transparent;
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .saved-page {
             padding: 23px 17px 0;
         }

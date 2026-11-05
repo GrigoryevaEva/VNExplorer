@@ -65,7 +65,7 @@
         border-color: var(--pink);
     }
 
-    @media (width <= 760px) {
+    @media (--viewport-mobile) {
         .saved-notice {
             bottom: 94px;
         }
