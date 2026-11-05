@@ -34,38 +34,45 @@
             :to="`/vn/${novel.id}`"
             class="novel-card__art"
             :aria-label="`Open ${novel.title}`"
-            ><CoverImage
+        >
+            <CoverImage
                 mode="card"
                 :dims="novel.image?.dims"
                 :src="novel.image?.thumbnail || novel.image?.url"
                 :title="novel.title"
-            /><span
+            />
+            <span
                 v-if="index !== null && index !== undefined"
                 class="novel-card__number"
                 aria-hidden="true"
-                >{{ String(index + 1).padStart(2, '0') }}</span
-            ></RouterLink
-        >
-        <div class="novel-card__ticket"
-            ><h2 class="novel-card__title"
-                ><RouterLink :to="`/vn/${novel.id}`">{{ novel.title }}</RouterLink></h2
-            ><div class="novel-card__facts"
-                ><span class="novel-card__date">{{ formatReleaseDate(novel.released) }}</span
-                ><span
+            >
+                {{ String(index + 1).padStart(2, '0') }}
+            </span>
+        </RouterLink>
+
+        <div class="novel-card__ticket">
+            <h2 class="novel-card__title">
+                <RouterLink :to="`/vn/${novel.id}`">{{ novel.title }}</RouterLink>
+            </h2>
+            <div class="novel-card__facts">
+                <span class="novel-card__date">{{ formatReleaseDate(novel.released) }}</span>
+                <span
                     class="novel-card__rating"
                     :class="{
                         'novel-card__rating--empty':
                             novel.rating === null || novel.rating === undefined,
                     }"
-                    ><span
+                >
+                    <span
                         v-if="novel.rating !== null && novel.rating !== undefined"
                         aria-hidden="true"
-                        >★</span
-                    >
-                    {{ formatRating(novel.rating) }}</span
-                ></div
-            ><slot name="actions"
-        /></div>
+                        v-text="'★'"
+                    />
+                    {{ formatRating(novel.rating) }}
+                </span>
+            </div>
+            <slot name="actions" />
+        </div>
     </article>
 </template>
 

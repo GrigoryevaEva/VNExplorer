@@ -46,52 +46,64 @@
         void loadDirectory();
     });
 </script>
+
 <template>
     <dialog
         ref="dialog"
         class="tag-picker"
         aria-labelledby="tag-heading"
     >
-        <header
-            ><div
-                ><p class="eyebrow">FIND YOUR KIND OF STORY</p
-                ><h2 id="tag-heading">Discover tags</h2></div
-            ><button
+        <header>
+            <div>
+                <p class="eyebrow">FIND YOUR KIND OF STORY</p>
+                <h2 id="tag-heading">Discover tags</h2>
+            </div>
+            <button
                 class="button button--lime"
                 @click="dialog?.close()"
-                >Done</button
-            ></header
-        >
-        <label class="tag-search"
-            >Search all tags<input
+            >
+                Done
+            </button>
+        </header>
+
+        <label class="tag-search">
+            Search all tags
+            <input
                 v-model="search"
                 type="search"
                 placeholder="Try a theme, setting or character…"
-        /></label>
-        <nav aria-label="Tag sections"
-            ><button
+            />
+        </label>
+
+        <nav aria-label="Tag sections">
+            <button
                 v-for="name in [...TAG_SECTIONS.map((item) => item.name), ALL_TAGS_SECTION]"
                 :key="name"
                 :aria-pressed="section === name"
                 @click="section = name"
-                >{{ name }}</button
-            ></nav
-        >
+            >
+                {{ name }}
+            </button>
+        </nav>
+
         <p
             v-if="loading"
             role="status"
-            >Loading tags… {{ loaded.toLocaleString('en') }} ready</p
         >
+            Loading tags… {{ loaded.toLocaleString('en') }} ready
+        </p>
         <div
             v-else-if="error"
             role="alert"
-            ><p>{{ error }}</p
-            ><button
+        >
+            <p>{{ error }}</p>
+            <button
                 class="button button--lime"
                 @click="loadDirectory"
-                >Retry tags</button
-            ></div
-        >
+            >
+                Retry tags
+            </button>
+        </div>
         <div
             v-else
             class="tag-results"
@@ -100,46 +112,53 @@
             tabindex="0"
         >
             <CacheNotice v-if="stale" />
-            <p class="tag-count"
-                >{{ shown.length }} tags{{ search.trim() ? ' across all sections' : '' }}</p
-            >
-            <ul
-                ><li
+            <p class="tag-count">
+                {{ shown.length }} tags{{ search.trim() ? ' across all sections' : '' }}
+            </p>
+            <ul>
+                <li
                     v-for="tag in shown"
                     :key="tag.id"
-                    ><div class="tag-row"
-                        ><strong>{{ tag.name }}</strong
-                        ><button
+                >
+                    <div class="tag-row">
+                        <strong>{{ tag.name }}</strong>
+                        <button
                             class="tag-info"
                             :aria-label="`About ${tag.name}`"
                             :aria-expanded="about === tag.id"
                             :aria-controls="`description-${tag.id}`"
                             @click="about = about === tag.id ? '' : tag.id"
-                            >Info</button
-                        ><button
+                            v-text="'Info'"
+                        />
+                        <button
                             class="tag-include"
                             :aria-label="`Include ${tag.name}`"
                             :aria-pressed="props.included.includes(tag.id)"
                             @click="emit('select', tag.id, CATALOG_TAG_ACTIONS.INCLUDE)"
-                            >+ Include</button
-                        ><button
+                            v-text="'+ Include'"
+                        />
+                        <button
                             class="tag-exclude"
                             :aria-label="`Exclude ${tag.name}`"
                             :aria-pressed="props.excluded.includes(tag.id)"
                             @click="emit('select', tag.id, CATALOG_TAG_ACTIONS.EXCLUDE)"
-                            >− Exclude</button
-                        ></div
-                    ><SourceDescription
+                            v-text="'− Exclude'"
+                        />
+                    </div>
+                    <SourceDescription
                         v-if="about === tag.id"
                         :id="`description-${tag.id}`"
                         :base-url="VNDB_SITE_URL"
                         class="tag-description"
-                        :text="tag.description || TAG_DESCRIPTION_FALLBACK" /></li
-            ></ul>
+                        :text="tag.description || TAG_DESCRIPTION_FALLBACK"
+                    />
+                </li>
+            </ul>
             <p v-if="!shown.length">No tags found. Try searching all tags.</p>
         </div>
     </dialog>
 </template>
+
 <style scoped>
     .tag-picker {
         width: min(1080px, calc(100vw - 40px));

@@ -21,16 +21,18 @@
         releaseEditionLabels(props.release, props.novelId, props.language));
     const ageLabel = computed(() => releaseAgeLabel(props.release.minimumAge));
 </script>
+
 <template>
     <li class="release-row">
-        <div class="release-date"
-            >{{ formatReleaseDate(release.released)
-            }}<span
+        <div class="release-date">
+            {{ formatReleaseDate(release.released) }}
+            <span
                 v-if="isPlanned(release.released)"
                 class="planned"
-                >Planned</span
-            ></div
-        >
+            >
+                Planned
+            </span>
+        </div>
         <span class="release-age">{{ ageLabel }}</span>
         <div class="release-title">
             <a
@@ -38,47 +40,55 @@
                 :href="websites[0]!.url"
                 target="_blank"
                 rel="noopener noreferrer"
-                >{{ release.title }} ↗</a
             >
+                {{ release.title }} ↗
+            </a>
             <details
                 v-else-if="websites.length > 1"
                 class="website-menu"
-                ><summary>{{ release.title }} ↗</summary
-                ><div
-                    ><p
+            >
+                <summary>{{ release.title }} ↗</summary>
+                <div>
+                    <p
                         v-for="link in websites"
                         :key="link.url"
-                        ><a
+                    >
+                        <a
                             :href="link.url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            >{{ link.label }} · {{ link.url }}</a
-                        ></p
-                    ></div
-                ></details
-            >
+                        >
+                            {{ link.label }} · {{ link.url }}
+                        </a>
+                    </p>
+                </div>
+            </details>
             <span v-else>{{ release.title }}</span>
             <div
                 v-if="editionLabels.length"
                 class="edition-labels"
-                ><span
+            >
+                <span
                     v-for="label in editionLabels"
                     :key="label"
-                    >{{ label }}</span
-                ></div
-            >
+                >
+                    {{ label }}
+                </span>
+            </div>
         </div>
-        <span class="release-platforms"
-            ><span
+        <span class="release-platforms">
+            <span
                 v-for="platform in release.platforms"
                 :key="platform"
                 class="platform"
-                >{{ platformName(platform) }}</span
-            ></span
-        >
+            >
+                {{ platformName(platform) }}
+            </span>
+        </span>
         <span class="release-status">{{ release.official ? 'Official' : 'Unofficial' }}</span>
     </li>
 </template>
+
 <style scoped>
     .release-row {
         display: grid;

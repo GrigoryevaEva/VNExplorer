@@ -30,8 +30,9 @@
         :aria-label="`${saved ? 'Saved' : 'Save'} ${novel.title}`"
         :aria-pressed="saved"
         @click.stop="toggle"
-        >{{ saved ? 'Saved ✓' : 'Save +' }}</button
     >
+        {{ saved ? 'Saved ✓' : 'Save +' }}
+    </button>
 </template>
 
 <style scoped>

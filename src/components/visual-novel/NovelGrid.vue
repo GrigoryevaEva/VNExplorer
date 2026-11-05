@@ -1,5 +1,7 @@
 <template>
-    <div class="novel-grid"><slot /></div>
+    <div class="novel-grid">
+        <slot />
+    </div>
 </template>
 
 <style scoped>

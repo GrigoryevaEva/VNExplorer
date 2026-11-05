@@ -55,18 +55,22 @@
             class="cover-fallback"
             role="img"
             :aria-label="`${title}: cover unavailable`"
-            ><span
+        >
+            <span
                 class="cover-fallback__symbol"
                 aria-hidden="true"
-                >✳</span
-            ><span>Cover unavailable</span></div
-        >
+            >
+                ✳
+            </span>
+            <span>Cover unavailable</span>
+        </div>
         <div
             v-else-if="!loaded"
             class="cover-loading"
             aria-label="Loading cover"
-            ><span>Loading cover</span></div
         >
+            <span>Loading cover</span>
+        </div>
     </div>
 </template>
 

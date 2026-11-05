@@ -35,14 +35,17 @@ describe('agreed destructuring format', () => {
         ).toBe('const value = { first: 1, second: 2, third: 3 };\n');
     });
 
-    it('preserves adjacent template text instead of inserting spaces into tag rows', async () => {
-        const options = { ...(await prettier.resolveConfig('package.json')), filepath: 'Tags.vue' };
+    it('keeps nested Vue tags on their own lines with stable closing brackets', async () => {
+        const filepath = 'src/components/tags/TagPicker.vue';
+        const options = { ...(await prettier.resolveConfig(filepath)), filepath };
         const source =
             '<template><div><strong>Fantasy</strong><button class="tag-info" aria-label="About Fantasy">Info</button><button class="tag-include">+ Include</button></div></template>';
         const formatted = await prettier.format(source, options);
 
-        expect(formatted).toMatch(/>Info<\/button\s*>\s*<button/);
-        expect(formatted).toMatch(/>\+ Include<\/button/);
+        expect(formatted).toContain('        <strong>Fantasy</strong>\n        <button\n');
+        expect(formatted).toContain(
+            '        </button>\n        <button class="tag-include">+ Include</button>'
+        );
         expect(await prettier.format(formatted, options)).toBe(formatted);
     });
 });

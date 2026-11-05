@@ -9,39 +9,50 @@
     defineProps<IProps>();
     defineEmits<{ change: [page: number] }>();
 </script>
+
 <template>
-    <footer class="catalog-footer"
-        ><span class="catalog-result-count">{{ resultCountLabel }}</span
-        ><nav
+    <footer class="catalog-footer">
+        <span class="catalog-result-count">{{ resultCountLabel }}</span>
+        <nav
             class="catalog-pagination"
             aria-label="Catalog pages"
-            ><button
+        >
+            <button
                 aria-label="Previous page"
                 :disabled="currentPage <= 1"
                 @click="$emit('change', currentPage - 1)"
-                >←</button
-            ><template
+            >
+                ←
+            </button>
+            <template
                 v-for="(page, index) in pageNumbers"
                 :key="page"
-                ><span
+            >
+                <span
                     v-if="index && page > pageNumbers[index - 1]! + 1"
                     aria-hidden="true"
-                    >…</span
-                ><button
+                >
+                    …
+                </span>
+                <button
                     :aria-label="`Page ${page}`"
                     :aria-current="page === currentPage ? 'page' : undefined"
                     @click="$emit('change', page)"
-                    >{{ page }}</button
-                ></template
-            ><button
+                >
+                    {{ page }}
+                </button>
+            </template>
+            <button
                 aria-label="Next page"
                 :disabled="!more || loading"
                 @click="$emit('change', currentPage + 1)"
-                >→</button
-            ></nav
-        ></footer
-    >
+            >
+                →
+            </button>
+        </nav>
+    </footer>
 </template>
+
 <style scoped>
     .catalog-footer {
         display: flex;

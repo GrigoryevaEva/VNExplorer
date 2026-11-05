@@ -52,8 +52,9 @@
             v-if="state !== 'loaded'"
             role="status"
             class="image-message"
-            >{{ SCREENSHOT_IMAGE_MESSAGES[state] }}</span
         >
+            {{ SCREENSHOT_IMAGE_MESSAGES[state] }}
+        </span>
     </div>
 </template>
 

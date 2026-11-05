@@ -8,6 +8,7 @@
     defineProps<{ screenshots: INovelScreenshot[] }>();
     const viewer = ref<InstanceType<typeof ScreenshotViewer>>();
 </script>
+
 <template>
     <section
         class="screenshot-gallery"
@@ -17,8 +18,9 @@
         <p
             v-if="!screenshots.length"
             class="gallery-empty"
-            >No screenshots available.</p
         >
+            No screenshots available.
+        </p>
         <ScreenshotThumbnails
             v-else
             :screenshots="screenshots"
@@ -30,6 +32,7 @@
         />
     </section>
 </template>
+
 <style scoped>
     .screenshot-gallery {
         margin-top: 42px;

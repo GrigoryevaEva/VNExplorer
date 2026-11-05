@@ -48,17 +48,24 @@
         class="catalog-page"
         aria-label="Visual novel catalog"
     >
-        <header class="page-heading"
-            ><div
-                ><p class="eyebrow">A WORLD BETWEEN THE LINES</p
-                ><h1>Find your next <span>story.</span></h1></div
-            ><div
+        <header class="page-heading">
+            <div>
+                <p class="eyebrow">A WORLD BETWEEN THE LINES</p>
+                <h1>
+                    Find your next
+                    <span>story.</span>
+                </h1>
+            </div>
+            <div
                 class="chapter-stamp"
                 aria-hidden="true"
-                ><span>ONE MORE</span><strong>chapter</strong
-                ><span>IS ALWAYS A GOOD IDEA ↗</span></div
-            ></header
-        >
+            >
+                <span>ONE MORE</span>
+                <strong>chapter</strong>
+                <span>IS ALWAYS A GOOD IDEA ↗</span>
+            </div>
+        </header>
+
         <div class="catalog-workspace">
             <div class="catalog-feed">
                 <div class="catalog-toolbar catalog-toolbar--search">
@@ -66,38 +73,45 @@
                         class="catalog-search"
                         role="search"
                         @submit.prevent="submit"
-                        ><label
+                    >
+                        <label
                             class="visually-hidden"
                             for="title-search"
-                            >Search titles</label
-                        ><input
+                        >
+                            Search titles
+                        </label>
+                        <input
                             id="title-search"
                             v-model="draftSearch"
                             type="search"
                             placeholder="A title, a world, a new story…"
-                        /><button
+                        />
+                        <button
                             class="button button--lime"
                             type="submit"
-                            >Search <span aria-hidden="true">↗</span></button
-                        ></form
-                    >
-                    <label class="catalog-order"
-                        ><span class="visually-hidden">Sort stories</span
-                        ><select
+                        >
+                            Search
+                            <span aria-hidden="true">↗</span>
+                        </button>
+                    </form>
+                    <label class="catalog-order">
+                        <span class="visually-hidden">Sort stories</span>
+                        <select
                             :value="applied.sort"
                             @change="changeSort"
-                            ><option :value="CATALOG_SORTS.RATING">Top rated ★</option
-                            ><option :value="CATALOG_SORTS.RELEASED"
-                                >First release · newest</option
-                            ></select
-                        ></label
-                    >
+                        >
+                            <option :value="CATALOG_SORTS.RATING">Top rated ★</option>
+                            <option :value="CATALOG_SORTS.RELEASED">First release · newest</option>
+                        </select>
+                    </label>
                     <button
                         class="button mobile-filters"
                         @click="openFilters"
-                        >Filters</button
                     >
+                        Filters
+                    </button>
                 </div>
+
                 <div
                     :ref="bindGrid"
                     class="scroll-region"
@@ -112,66 +126,90 @@
                         v-if="loading"
                         class="feed-message"
                         role="status"
-                        ><span
+                    >
+                        <span
                             class="message-symbol"
                             aria-hidden="true"
-                            >✳</span
-                        ><h2>Opening a new chapter…</h2><p>Getting stories from VNDB.</p></div
-                    >
+                        >
+                            ✳
+                        </span>
+                        <h2>Opening a new chapter…</h2>
+                        <p>Getting stories from VNDB.</p>
+                    </div>
                     <div
                         v-else-if="error"
                         class="feed-message feed-message--error"
                         role="alert"
-                        ><span
+                    >
+                        <span
                             class="message-symbol"
                             aria-hidden="true"
-                            >↺</span
-                        ><h2>A little plot twist.</h2><p>{{ error }}</p
-                        ><button
+                        >
+                            ↺
+                        </span>
+                        <h2>A little plot twist.</h2>
+                        <p>{{ error }}</p>
+                        <button
                             class="button button--lime"
                             @click="load"
-                            >Try again <span aria-hidden="true">↗</span></button
-                        ></div
-                    >
+                        >
+                            Try again
+                            <span aria-hidden="true">↗</span>
+                        </button>
+                    </div>
                     <div
                         v-else-if="!novels.length && titleMatchCount"
                         class="feed-message"
-                        ><span
+                    >
+                        <span
                             class="message-symbol"
                             aria-hidden="true"
-                            >○</span
-                        ><h2
-                            >{{ titleMatchCount.toLocaleString('en') }}
+                        >
+                            ○
+                        </span>
+                        <h2>
+                            {{ titleMatchCount.toLocaleString('en') }}
                             {{ titleMatchCount === 1 ? 'match hidden' : 'matches hidden' }} by
-                            filters.</h2
-                        ><p
-                            >Your title search has matches in VNDB. Show them with all filters
-                            cleared.</p
-                        ><button
+                            filters.
+                        </h2>
+                        <p>
+                            Your title search has matches in VNDB. Show them with all filters
+                            cleared.
+                        </p>
+                        <button
                             class="button button--lime"
                             @click="navigate(selectionWithoutFilters(applied))"
-                            >Show without filters</button
-                        ></div
-                    >
+                        >
+                            Show without filters
+                        </button>
+                    </div>
                     <div
                         v-else-if="!novels.length"
                         class="feed-message"
-                        ><span
+                    >
+                        <span
                             class="message-symbol"
                             aria-hidden="true"
-                            >○</span
-                        ><h2>No stories here yet.</h2
-                        ><p>VNDB returned no matching stories. Try another title.</p></div
-                    >
-                    <NovelGrid v-else
-                        ><NovelCard
+                        >
+                            ○
+                        </span>
+                        <h2>No stories here yet.</h2>
+                        <p>VNDB returned no matching stories. Try another title.</p>
+                    </div>
+                    <NovelGrid v-else>
+                        <NovelCard
                             v-for="(novel, index) in novels"
                             :key="novel.id"
                             :novel="novel"
                             :index="index"
-                            ><template #actions><SaveButton :novel="novel" /></template></NovelCard
-                    ></NovelGrid>
+                        >
+                            <template #actions>
+                                <SaveButton :novel="novel" />
+                            </template>
+                        </NovelCard>
+                    </NovelGrid>
                 </div>
+
                 <CatalogPagination
                     :current-page="applied.page"
                     :page-numbers="pageNumbers"
@@ -181,11 +219,12 @@
                     @change="navigate({ ...applied, page: $event })"
                 />
             </div>
+
             <aside
                 class="catalog-sidebar"
                 aria-label="Current catalog selection"
             >
-                <div ref="filterPanel"></div>
+                <div ref="filterPanel" />
                 <Teleport
                     v-if="filterPanel"
                     :to="mobileFiltersOpen && filterDialog ? filterDialog : filterPanel"
@@ -199,103 +238,132 @@
                             class="filter-close"
                             aria-label="Close filters"
                             @click="closeFilters"
-                            >Close ×</button
                         >
+                            Close ×
+                        </button>
                         <h2>Filters</h2>
-                        <LanguageFilter v-model="draftLanguage" /><div class="tag-draft"
-                            ><p class="eyebrow">INCLUDED TAGS</p
-                            ><button
+                        <LanguageFilter v-model="draftLanguage" />
+                        <div class="tag-draft">
+                            <p class="eyebrow">INCLUDED TAGS</p>
+                            <button
                                 v-for="id in draftIncluded"
                                 :key="id"
                                 class="tag-chip"
                                 :aria-label="`Remove included tag ${tagName(id)}`"
                                 @click="draftIncluded = draftIncluded.filter((tag) => tag !== id)"
-                                >+ {{ tagName(id) }} ×</button
-                            ><p v-if="!draftIncluded.length">Anything goes</p
-                            ><p class="eyebrow">EXCLUDED TAGS</p
-                            ><button
+                            >
+                                + {{ tagName(id) }} ×
+                            </button>
+                            <p v-if="!draftIncluded.length">Anything goes</p>
+                            <p class="eyebrow">EXCLUDED TAGS</p>
+                            <button
                                 v-for="id in draftExcluded"
                                 :key="id"
                                 class="tag-chip"
                                 :aria-label="`Remove excluded tag ${tagName(id)}`"
                                 @click="draftExcluded = draftExcluded.filter((tag) => tag !== id)"
-                                >− {{ tagName(id) }} ×</button
-                            ><p v-if="!draftExcluded.length">None</p
-                            ><label class="strict-match"
-                                ><input
+                            >
+                                − {{ tagName(id) }} ×
+                            </button>
+                            <p v-if="!draftExcluded.length">None</p>
+                            <label class="strict-match">
+                                <input
                                     v-model="draftStrict"
                                     type="checkbox"
                                 />
-                                Strict match</label
-                            ><button
+                                Strict match
+                            </label>
+                            <button
                                 class="button tag-browse"
                                 @click="
                                     tagsOpen = true;
                                     readTagNames();
                                 "
-                                >Browse tags</button
-                            ></div
-                        >
+                            >
+                                Browse tags
+                            </button>
+                        </div>
                         <button
                             class="button button--lime"
                             @click="applyFilters"
-                            >Apply filters</button
                         >
+                            Apply filters
+                        </button>
                     </section>
                 </Teleport>
-                <section class="selection-card"
-                    ><p class="eyebrow">YOUR SELECTION</p><h2>Good stories.<br />No limits.</h2
-                    ><dl
-                        ><div
-                            ><dt>Language</dt
-                            ><dd
-                                >{{ selectionLanguageLabel }} <span aria-hidden="true">↗</span></dd
-                            ></div
-                        ><div
-                            ><dt>Tags</dt
-                            ><dd
-                                >{{
+
+                <section class="selection-card">
+                    <p class="eyebrow">YOUR SELECTION</p>
+                    <h2>
+                        Good stories.
+                        <br />
+                        No limits.
+                    </h2>
+                    <dl>
+                        <div>
+                            <dt>Language</dt>
+                            <dd>
+                                {{ selectionLanguageLabel }}
+                                <span aria-hidden="true">↗</span>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Tags</dt>
+                            <dd>
+                                {{
                                     [
                                         ...applied.includedTags.map((id) => '+ ' + tagName(id)),
                                         ...applied.excludedTags.map((id) => '− ' + tagName(id)),
                                     ].join(', ') || 'Anything goes'
                                 }}
-                                <span aria-hidden="true">✳</span></dd
-                            ></div
-                        ><div
-                            ><dt>Order</dt
-                            ><dd
-                                >{{
+                                <span aria-hidden="true">✳</span>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Order</dt>
+                            <dd>
+                                {{
                                     applied.sort === CATALOG_SORTS.RATING
                                         ? 'Highest rated first'
                                         : 'Newest first release'
                                 }}
-                                <span aria-hidden="true">★</span></dd
-                            ></div
-                        ></dl
-                    ><div class="selection-card__note"
-                        ><span aria-hidden="true">↳</span> Start with the stories readers love.</div
-                    ></section
-                >
-                <div class="reading-card"
-                    ><span
+                                <span aria-hidden="true">★</span>
+                            </dd>
+                        </div>
+                    </dl>
+                    <div class="selection-card__note">
+                        <span aria-hidden="true">↳</span>
+                        Start with the stories readers love.
+                    </div>
+                </section>
+
+                <div class="reading-card">
+                    <span
                         class="reading-card__flower"
                         aria-hidden="true"
-                        >✳</span
-                    ><p>Different worlds.<br /><strong>Same curiosity.</strong></p
-                    ><span class="reading-card__bottom">GET LOST IN A GOOD ONE ↗</span></div
-                >
-                <p class="source-note"
-                    >Stories & artwork from
+                    >
+                        ✳
+                    </span>
+                    <p>
+                        Different worlds.
+                        <br />
+                        <strong>Same curiosity.</strong>
+                    </p>
+                    <span class="reading-card__bottom">GET LOST IN A GOOD ONE ↗</span>
+                </div>
+                <p class="source-note">
+                    Stories & artwork from
                     <a
                         href="https://vndb.org"
                         target="_blank"
                         rel="noreferrer"
-                        >VNDB ↗</a
-                    ></p
-                >
+                    >
+                        VNDB ↗
+                    </a>
+                </p>
             </aside>
         </div>
+
         <TagPicker
             v-if="tagsOpen"
             :included="draftIncluded"
@@ -303,6 +371,7 @@
             @select="selectTag"
             @done="tagsOpen = false"
         />
+
         <dialog
             ref="filterDialog"
             class="filter-dialog"
@@ -313,7 +382,7 @@
                     if (event.target === filterDialog) closeFilters();
                 }
             "
-        ></dialog>
+        />
     </section>
 </template>
 

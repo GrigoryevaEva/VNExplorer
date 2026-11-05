@@ -5,6 +5,7 @@
     defineProps<{ screenshots: INovelScreenshot[] }>();
     const emit = defineEmits<{ select: [position: number] }>();
 </script>
+
 <template>
     <div class="screenshot-grid">
         <button
@@ -22,6 +23,7 @@
         </button>
     </div>
 </template>
+
 <style scoped>
     .screenshot-grid {
         display: grid;

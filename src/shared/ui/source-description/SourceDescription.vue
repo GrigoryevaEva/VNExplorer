@@ -40,7 +40,9 @@
 </script>
 
 <template>
-    <div class="source-description"><SourceNodes :nodes="nodes" /></div>
+    <div class="source-description">
+        <SourceNodes :nodes="nodes" />
+    </div>
 </template>
 
 <style scoped>

@@ -21,62 +21,85 @@
         class="saved-page"
         aria-label="Saved visual novels"
     >
-        <header class="page-heading"
-            ><div
-                ><p class="eyebrow">KEPT FOR ANOTHER CHAPTER</p
-                ><h1>Your <span>Saved.</span></h1></div
-            ></header
-        >
-        <div
-            ><CacheNotice v-if="stale && !refreshing" /><div class="saved-toolbar"
-                ><label
-                    >Search Saved<input
+        <header class="page-heading">
+            <div>
+                <p class="eyebrow">KEPT FOR ANOTHER CHAPTER</p>
+                <h1>
+                    Your
+                    <span>Saved.</span>
+                </h1>
+            </div>
+        </header>
+
+        <div>
+            <CacheNotice v-if="stale && !refreshing" />
+            <div class="saved-toolbar">
+                <label>
+                    Search Saved
+                    <input
                         v-model="search"
                         type="search"
-                        placeholder="Find a kept story…" /></label
-                ><label
-                    >Sort saved stories<select v-model="sort"
-                        ><option value="added">Recently added</option
-                        ><option value="rating">Top rated</option
-                        ><option value="released">First release · newest</option></select
-                    ></label
-                ></div
-            ><p
+                        placeholder="Find a kept story…"
+                    />
+                </label>
+                <label>
+                    Sort saved stories
+                    <select v-model="sort">
+                        <option value="added">Recently added</option>
+                        <option value="rating">Top rated</option>
+                        <option value="released">First release · newest</option>
+                    </select>
+                </label>
+            </div>
+            <p
                 v-if="refreshError"
                 class="saved-refresh"
-                >Could not refresh from VNDB. Showing your last-known saved details.
-                <button @click="refresh">Try again</button></p
-            ><p
+            >
+                Could not refresh from VNDB. Showing your last-known saved details.
+                <button @click="refresh">Try again</button>
+            </p>
+            <p
                 v-else-if="refreshing"
                 class="saved-refresh"
-                >Showing saved details while checking VNDB…</p
-            ></div
-        >
+            >
+                Showing saved details while checking VNDB…
+            </p>
+        </div>
+
         <div
             v-if="!savedNovels.length"
             class="feed-message"
-            ><h2>Your collection starts here.</h2
-            ><p>Save a story from Catalog to keep it for later.</p
-            ><RouterLink to="/">Explore Catalog ↗</RouterLink></div
         >
+            <h2>Your collection starts here.</h2>
+            <p>Save a story from Catalog to keep it for later.</p>
+            <RouterLink to="/">Explore Catalog ↗</RouterLink>
+        </div>
         <div
             v-else
             class="scroll-region"
             role="region"
             aria-label="Saved results"
             tabindex="0"
-            ><div
+        >
+            <div
                 v-if="!novels.length"
                 class="feed-message"
-                ><h2>No saved stories match.</h2><p>Try another title or clear your search.</p></div
-            ><NovelGrid v-else
-                ><NovelCard
+            >
+                <h2>No saved stories match.</h2>
+                <p>Try another title or clear your search.</p>
+            </div>
+            <NovelGrid v-else>
+                <NovelCard
                     v-for="novel in novels"
                     :key="novel.id"
                     :novel="novel"
-                    ><template #actions
-                        ><SaveButton :novel="novel" /></template></NovelCard></NovelGrid
-        ></div>
+                >
+                    <template #actions>
+                        <SaveButton :novel="novel" />
+                    </template>
+                </NovelCard>
+            </NovelGrid>
+        </div>
     </section>
 </template>
 

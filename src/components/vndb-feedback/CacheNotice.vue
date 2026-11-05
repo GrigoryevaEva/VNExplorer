@@ -6,8 +6,9 @@
     <p
         class="cache-notice"
         role="status"
-        >{{ VNDB_STALE_MESSAGE }}</p
     >
+        {{ VNDB_STALE_MESSAGE }}
+    </p>
 </template>
 
 <style scoped>

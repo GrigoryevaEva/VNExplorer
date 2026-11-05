@@ -16,14 +16,16 @@
         <label
             v-for="choice in LANGUAGE_CHOICES"
             :key="choice.value"
-            ><input
+        >
+            <input
                 type="radio"
                 name="catalog-language"
                 :value="choice.value"
                 :checked="modelValue === choice.value"
                 @change="$emit('update:modelValue', choice.value)"
-            />{{ choice.label }}</label
-        >
+            />
+            {{ choice.label }}
+        </label>
         <p>Published releases, including demos and partial translations.</p>
     </fieldset>
 </template>

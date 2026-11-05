@@ -29,122 +29,158 @@
             to="/"
             class="detail-back"
             @click="returnToCatalog"
-            >← Catalog</RouterLink
         >
+            ← Catalog
+        </RouterLink>
+
         <CacheNotice v-if="stale && !loading" />
         <div
             v-if="loading"
             class="feed-message"
             role="status"
-            ><span
+        >
+            <span
                 class="message-symbol"
                 aria-hidden="true"
-                >✳</span
-            ><h1>Opening the story…</h1></div
-        >
+            >
+                ✳
+            </span>
+            <h1>Opening the story…</h1>
+        </div>
         <div
             v-else-if="error"
             class="feed-message feed-message--error"
             role="alert"
-            ><h1>Could not open this story</h1><p>{{ error }}</p
-            ><button
+        >
+            <h1>Could not open this story</h1>
+            <p>{{ error }}</p>
+            <button
                 class="button button--lime"
                 @click="load"
-                >Try again ↗</button
-            ></div
-        >
+            >
+                Try again ↗
+            </button>
+        </div>
         <div
             v-else-if="!novel"
             class="feed-message"
-            ><h1>Story not found</h1><p>This visual novel is unavailable or its ID is unknown.</p
-            ><RouterLink to="/">Explore Catalog</RouterLink></div
         >
+            <h1>Story not found</h1>
+            <p>This visual novel is unavailable or its ID is unknown.</p>
+            <RouterLink to="/">Explore Catalog</RouterLink>
+        </div>
         <article v-else>
             <div class="detail-hero">
-                <div class="detail-cover"
-                    ><CoverImage
+                <div class="detail-cover">
+                    <CoverImage
                         :src="novel.image?.url"
                         :title="novel.title"
-                /></div>
-                <div class="detail-introduction"
-                    ><p class="eyebrow">A STORY TO GET LOST IN / {{ novel.id }}</p
-                    ><h1>{{ novel.title }}</h1>
-                    <dl class="detail-facts"
-                        ><div
-                            ><dt>Rating</dt
-                            ><dd class="detail-rating">{{ formatRating(novel.rating) }}</dd
-                            ><p>{{
-                                novel.voteCount === null || novel.voteCount === undefined
-                                    ? 'Vote count unknown'
-                                    : `${novel.voteCount.toLocaleString('en')} votes`
-                            }}</p></div
-                        ><div
-                            ><dt>First release</dt
-                            ><dd>{{ formatReleaseDate(novel.released) }}</dd></div
-                        ><div
-                            ><dt>Approximate play time</dt><dd>{{ formatPlayTime(novel) }}</dd></div
-                        ></dl
-                    ><SaveButton :novel="novel" />
+                    />
+                </div>
+                <div class="detail-introduction">
+                    <p class="eyebrow">A STORY TO GET LOST IN / {{ novel.id }}</p>
+                    <h1>{{ novel.title }}</h1>
+                    <dl class="detail-facts">
+                        <div>
+                            <dt>Rating</dt>
+                            <dd class="detail-rating">{{ formatRating(novel.rating) }}</dd>
+                            <p>
+                                {{
+                                    novel.voteCount === null || novel.voteCount === undefined
+                                        ? 'Vote count unknown'
+                                        : `${novel.voteCount.toLocaleString('en')} votes`
+                                }}
+                            </p>
+                        </div>
+                        <div>
+                            <dt>First release</dt>
+                            <dd>{{ formatReleaseDate(novel.released) }}</dd>
+                        </div>
+                        <div>
+                            <dt>Approximate play time</dt>
+                            <dd>{{ formatPlayTime(novel) }}</dd>
+                        </div>
+                    </dl>
+                    <SaveButton :novel="novel" />
                 </div>
             </div>
+
             <section
                 class="detail-section"
                 aria-labelledby="description-heading"
-                ><h2 id="description-heading">The story</h2
-                ><SourceDescription
+            >
+                <h2 id="description-heading">The story</h2>
+                <SourceDescription
                     v-if="novel.description"
                     :base-url="VNDB_SITE_URL"
                     class="detail-description"
                     :text="novel.description"
-                /><p
+                />
+                <p
                     v-else
                     class="detail-empty"
-                    >No description available.</p
-                ></section
-            >
+                >
+                    No description available.
+                </p>
+            </section>
+
             <section
                 class="detail-section"
                 aria-labelledby="titles-heading"
-                ><h2 id="titles-heading">Alternative titles</h2
-                ><ul
+            >
+                <h2 id="titles-heading">Alternative titles</h2>
+                <ul
                     v-if="titles.length"
                     class="detail-titles"
-                    ><li
+                >
+                    <li
                         v-for="title in titles"
                         :key="title"
-                        >{{ title }}</li
-                    ></ul
-                ><p
+                    >
+                        {{ title }}
+                    </li>
+                </ul>
+                <p
                     v-else
                     class="detail-empty"
-                    >No alternative titles listed.</p
-                ></section
-            >
+                >
+                    No alternative titles listed.
+                </p>
+            </section>
+
             <section
                 class="detail-section"
                 aria-labelledby="tags-heading"
-                ><h2 id="tags-heading">Spoiler-free tags</h2
-                ><ul
+            >
+                <h2 id="tags-heading">Spoiler-free tags</h2>
+                <ul
                     v-if="tags.length"
                     class="detail-tags"
-                    ><li
+                >
+                    <li
                         v-for="tag in tags"
                         :key="tag.id"
-                        ><RouterLink
+                    >
+                        <RouterLink
                             :to="{
                                 name: 'catalog',
                                 query: catalogTagQuery(tag.id),
                             }"
-                            >{{ tag.name }}</RouterLink
-                        ></li
-                    ></ul
-                ><p
+                        >
+                            {{ tag.name }}
+                        </RouterLink>
+                    </li>
+                </ul>
+                <p
                     v-else
                     class="detail-empty"
-                    >No spoiler-free tags listed.</p
-                ></section
-            >
+                >
+                    No spoiler-free tags listed.
+                </p>
+            </section>
+
             <ScreenshotGallery :screenshots="novel.screenshots" />
+
             <ReleaseGroups
                 :key="novel.id"
                 :novel-id="novel.id"

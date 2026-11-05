@@ -40,6 +40,7 @@
     });
     defineExpose({ open });
 </script>
+
 <template>
     <dialog
         ref="viewer"
@@ -47,36 +48,43 @@
         class="screenshot-viewer"
         @keydown="keyboard"
     >
-        <div class="viewer-toolbar"
-            ><span aria-live="polite">Screenshot {{ index + 1 }} of {{ screenshots.length }}</span
-            ><button
+        <div class="viewer-toolbar">
+            <span aria-live="polite">Screenshot {{ index + 1 }} of {{ screenshots.length }}</span>
+            <button
                 autofocus
                 aria-label="Close viewer"
                 @click="close"
-                >Close ×</button
-            ></div
-        >
+            >
+                Close ×
+            </button>
+        </div>
+
         <ScreenshotImage
             v-if="isOpen && current"
             :src="current.url"
             :alt="`Screenshot ${index + 1} of ${screenshots.length}`"
             :dims="current.dims"
         />
-        <div class="viewer-navigation"
-            ><button
+
+        <div class="viewer-navigation">
+            <button
                 aria-label="Previous screenshot"
                 :disabled="screenshots.length < 2"
                 @click="move(-1)"
-                >← Previous</button
-            ><button
+            >
+                ← Previous
+            </button>
+            <button
                 aria-label="Next screenshot"
                 :disabled="screenshots.length < 2"
                 @click="move(1)"
-                >Next →</button
-            ></div
-        >
+            >
+                Next →
+            </button>
+        </div>
     </dialog>
 </template>
+
 <style scoped>
     .screenshot-viewer {
         width: min(1400px, calc(100% - 40px));

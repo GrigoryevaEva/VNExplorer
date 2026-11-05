@@ -23,6 +23,7 @@
         toggle,
     } = useReleaseGroups(props.novelId);
 </script>
+
 <template>
     <section
         class="releases"
@@ -30,45 +31,50 @@
     >
         <h2 id="releases-heading">Releases</h2>
         <CacheNotice v-if="manifestStale && !manifestLoading" />
+
         <p
             v-if="manifestLoading"
             role="status"
-            >Finding release languages…</p
         >
+            Finding release languages…
+        </p>
         <div
             v-else-if="manifestError"
             role="alert"
-            ><p>Could not load release languages. {{ manifestError }}</p
-            ><button
+        >
+            <p>Could not load release languages. {{ manifestError }}</p>
+            <button
                 class="button"
                 @click="loadDirectory"
-                >Retry release directory</button
-            ></div
-        >
+            >
+                Retry release directory
+            </button>
+        </div>
         <p
             v-else-if="!groups.length"
             class="muted"
-            >No releases listed.</p
         >
+            No releases listed.
+        </p>
+
         <div
             v-for="group in groups"
             :key="group.code"
             class="release-group"
         >
-            <h3
-                ><button
+            <h3>
+                <button
                     :id="`release-language-${group.code}`"
                     class="group-toggle"
                     :aria-expanded="expanded.has(group.code)"
                     :aria-controls="`release-group-${group.code}`"
                     @click="toggle(group.code, group.ids)"
-                    >{{ group.name }} · {{ group.ids.length }}
-                    {{ group.ids.length === 1 ? 'release' : 'releases'
-                    }}<span aria-hidden="true">{{
-                        expanded.has(group.code) ? '−' : '+'
-                    }}</span></button
-                ></h3
-            >
+                >
+                    {{ group.name }} · {{ group.ids.length }}
+                    {{ group.ids.length === 1 ? 'release' : 'releases' }}
+                    <span aria-hidden="true">{{ expanded.has(group.code) ? '−' : '+' }}</span>
+                </button>
+            </h3>
             <div
                 v-if="expanded.has(group.code)"
                 :id="`release-group-${group.code}`"
@@ -80,21 +86,25 @@
                 <p
                     v-if="loading.has(group.code)"
                     role="status"
-                    >Loading releases: {{ loaded(group.ids) }} / {{ group.ids.length }}</p
                 >
+                    Loading releases: {{ loaded(group.ids) }} / {{ group.ids.length }}
+                </p>
                 <div
                     v-if="errors.has(group.code)"
                     role="alert"
-                    ><p
-                        >Could not load {{ group.name }} releases.
+                >
+                    <p>
+                        Could not load {{ group.name }} releases.
                         {{ errors.get(group.code) }} Loaded {{ loaded(group.ids) }} /
-                        {{ group.ids.length }}.</p
-                    ><button
+                        {{ group.ids.length }}.
+                    </p>
+                    <button
                         class="button"
                         @click="loadGroup(group.code, group.ids)"
-                        >Retry {{ group.name }} releases</button
-                    ></div
-                >
+                    >
+                        Retry {{ group.name }} releases
+                    </button>
+                </div>
                 <ul class="release-list">
                     <ReleaseRow
                         v-for="release in rows(group.ids)"
