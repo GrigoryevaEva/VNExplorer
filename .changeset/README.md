@@ -28,4 +28,4 @@ The Release workflow runs its checks and creates a GitHub Release with the match
 
 Until `v1.0.0` is published, use `task/<name>` branches from `dev` and run checks throughout the work. Run the full regression and production smoke before the first publication.
 
-After publication, use `feature/<name>` for major features and `fix/<name>` for bugs. Write and run tests at the end of the branch after review approval and the maintainer's instruction to test. Account for CI when pushing branches or tags that trigger it.
+After publication, start from current `dev`. Use `feature/<name>` for major features, `fix/<name>` for bugs, and `docs/<name>` for documentation-only changes. Write and run tests at the end of the branch after review approval and the maintainer's instruction to test. Account for CI when pushing branches or tags that trigger it.
