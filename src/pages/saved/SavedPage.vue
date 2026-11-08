@@ -1,9 +1,10 @@
 <script setup lang="ts">
-    import { SaveButton } from '@/components/saved';
-    import { NovelCard, NovelGrid } from '@/components/visual-novel';
+    import { NovelCard } from '@/components/novel-card';
+    import { NovelGrid } from '@/components/novel-grid';
+    import { SaveButton } from '@/components/save-button';
     import { CacheNotice } from '@/components/vndb-feedback';
 
-    import { useSavedPage } from './useSavedPage';
+    import { useSavedPage } from './model/useSavedPage';
     const {
         search,
         sort,

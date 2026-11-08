@@ -1,13 +1,13 @@
 import { afterEach, expect, it, vi } from 'vitest';
 
-import type { IReleaseDetails } from '@/entities/release';
+import type { IReleaseDetails } from '@/entities/release/model';
 import {
     isPlanned,
     newestReleases,
     releaseAgeLabel,
     releaseEditionLabels,
     releaseWebsites,
-} from '@/entities/release';
+} from '@/entities/release/model';
 
 const edition = (overrides: Partial<IReleaseDetails> = {}): IReleaseDetails => ({
     id: 'r1',

@@ -3,7 +3,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, expect, it } from 'vitest';
 
 import { fetchCatalogSelection } from '@/api/catalog';
-import { createCatalogSelection } from '@/entities/catalog';
+import { createCatalogSelection } from '@/entities/catalog/model';
 
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));

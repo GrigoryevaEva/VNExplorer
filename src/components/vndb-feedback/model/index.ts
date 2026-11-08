@@ -1,0 +1,1 @@
+export { vndbRequestMessage } from './message';

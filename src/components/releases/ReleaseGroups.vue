@@ -1,12 +1,16 @@
 <script setup lang="ts">
-    import { CacheNotice } from '@/components/vndb-feedback';
+    import { storeToRefs } from 'pinia';
+    import { onBeforeUnmount, watch } from 'vue';
 
-    import ReleaseRow from './ReleaseRow.vue';
-    import { useReleaseGroups } from './useReleaseGroups';
+    import { CacheNotice } from '@/components/vndb-feedback';
+    import { useReleaseGroupsStore } from '@/entities/release/store';
+
+    import ReleaseRow from './ui/ReleaseRow.vue';
     interface IReleaseGroupsProps {
         novelId: string;
     }
     const props = defineProps<IReleaseGroupsProps>();
+    const store = useReleaseGroupsStore();
     const {
         manifestLoading,
         manifestError,
@@ -16,12 +20,23 @@
         loading,
         errors,
         groups,
+    } = storeToRefs(store);
+    const {
         loadDirectory,
         loaded,
         rows,
         loadGroup,
         toggle,
-    } = useReleaseGroups(props.novelId);
+        loadForNovel,
+        clear,
+    } = store;
+
+    watch(
+        () => props.novelId,
+        (id) => void loadForNovel(id),
+        { immediate: true }
+    );
+    onBeforeUnmount(clear);
 </script>
 
 <template>

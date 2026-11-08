@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { SavedNotice } from '@/components/saved';
+    import { SavedNotice } from '@/components/saved-notice';
 </script>
 
 <template>

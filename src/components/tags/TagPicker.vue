@@ -1,23 +1,23 @@
 <script setup lang="ts">
     import { storeToRefs } from 'pinia';
-    import { computed, onMounted, ref } from 'vue';
+    import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
     import { useEventListener } from '@vueuse/core';
 
     import { VNDB_SITE_URL } from '@/api/protocol';
+    import { SourceDescription } from '@/components/source-description';
     import { CacheNotice } from '@/components/vndb-feedback';
-    import type { TCatalogTagAction } from '@/entities/catalog';
-    import { CATALOG_TAG_ACTIONS } from '@/entities/catalog';
+    import type { TCatalogTagAction } from '@/entities/catalog/model';
+    import { CATALOG_TAG_ACTIONS } from '@/entities/catalog/model';
     import {
         ALL_TAGS_SECTION,
         DEFAULT_TAG_SECTION,
         selectDirectoryTags,
         TAG_SECTIONS,
-    } from '@/entities/tag';
-    import { SourceDescription } from '@/shared/ui/source-description';
-    import { useTagsStore } from '@/stores/tags';
+    } from '@/entities/tag/model';
+    import { useTagsStore } from '@/entities/tag/store';
 
-    import { TAG_DESCRIPTION_FALLBACK } from './constants';
+    import { TAG_DESCRIPTION_FALLBACK } from './model/constants';
 
     interface ITagPickerProps {
         included: readonly string[];
@@ -45,6 +45,7 @@
         dialog.value?.showModal();
         void loadDirectory();
     });
+    onBeforeUnmount(() => dialog.value?.close());
 </script>
 
 <template>

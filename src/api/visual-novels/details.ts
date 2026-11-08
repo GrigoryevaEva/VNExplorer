@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { IRequestOptions } from '@/api/client';
 import { queryVndb } from '@/api/client';
 import { VNDB_ENDPOINTS, VNDB_FIELDS, VNDB_OPERATORS } from '@/api/protocol';
-import type { IVisualNovelDetails } from '@/entities/visual-novel';
+import type { IVisualNovelDetails } from '@/entities/visual-novel/model';
 
 import { mapNovelCard, novelCardSchema } from './cards';
 import { NOVEL_DETAIL_FIELDS, NOVEL_DETAIL_RESULTS_LIMIT } from './constants';

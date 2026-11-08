@@ -3,9 +3,13 @@ import { queryVndb } from '@/api/client';
 import type { IVndbQuery, IVndbResponse } from '@/api/protocol';
 import { CARD_FIELDS, VNDB_ENDPOINTS, VNDB_FIELDS, VNDB_OPERATORS } from '@/api/protocol';
 import { mapNovelCard, novelCardSchema } from '@/api/visual-novels';
-import type { ICatalogSelection } from '@/entities/catalog';
-import { CATALOG_LANGUAGES, CATALOG_PAGE_SIZE, selectionWithoutFilters } from '@/entities/catalog';
-import type { IVisualNovelCard } from '@/entities/visual-novel';
+import type { ICatalogSelection } from '@/entities/catalog/model';
+import {
+    CATALOG_LANGUAGES,
+    CATALOG_PAGE_SIZE,
+    selectionWithoutFilters,
+} from '@/entities/catalog/model';
+import type { IVisualNovelCard } from '@/entities/visual-novel/model';
 
 import { RELEASE_AVAILABILITY, TAG_RATING_THRESHOLD, TAG_SPOILER_LEVEL } from './constants';
 

@@ -1,13 +1,14 @@
 <script setup lang="ts">
-    import { SaveButton } from '@/components/saved';
+    import { NovelCard } from '@/components/novel-card';
+    import { NovelGrid } from '@/components/novel-grid';
+    import { SaveButton } from '@/components/save-button';
     import { TagPicker } from '@/components/tags';
-    import { NovelCard, NovelGrid } from '@/components/visual-novel';
     import { CacheNotice } from '@/components/vndb-feedback';
-    import { CATALOG_SORTS, selectionWithoutFilters } from '@/entities/catalog';
+    import { CATALOG_SORTS, selectionWithoutFilters } from '@/entities/catalog/model';
 
-    import CatalogPagination from './components/CatalogPagination.vue';
-    import LanguageFilter from './components/LanguageFilter.vue';
-    import { useCatalog } from './useCatalog';
+    import { useCatalog } from './model/useCatalog';
+    import CatalogPagination from './ui/CatalogPagination.vue';
+    import LanguageFilter from './ui/LanguageFilter.vue';
     const {
         tagsOpen,
         applied,

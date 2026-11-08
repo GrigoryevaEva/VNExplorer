@@ -1,4 +1,4 @@
-import { createPinia, storeToRefs } from 'pinia';
+import { createPinia, disposePinia, storeToRefs } from 'pinia';
 
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
@@ -13,7 +13,7 @@ afterEach(() => {
 afterAll(() => server.close());
 
 it('restricts directory mutation to its load action', async () => {
-    const { useTagsStore } = await import('@/stores/tags');
+    const { useTagsStore } = await import('@/entities/tag/store');
     const pinia = createPinia();
     const store = useTagsStore(pinia);
     const patch: unknown = Reflect.get(store, '$patch');
@@ -65,7 +65,7 @@ it('shares a paginated directory between consumers and registers its readonly st
             });
         })
     );
-    const { useTagsStore } = await import('@/stores/tags');
+    const { useTagsStore } = await import('@/entities/tag/store');
     const pinia = createPinia();
     const first = useTagsStore(pinia);
     const second = useTagsStore(pinia);
@@ -88,7 +88,7 @@ it('shares a paginated directory between consumers and registers its readonly st
 });
 
 it('hydrates registered state before exposing the readonly facade and keeps storeToRefs protected', async () => {
-    const { useTagsStore } = await import('@/stores/tags');
+    const { useTagsStore } = await import('@/entities/tag/store');
     const pinia = createPinia();
     pinia.state.value.tags = {
         tags: [{ id: 'g96', name: 'Restored', description: '', searchable: true }],
@@ -122,7 +122,7 @@ it('reports an invalid directory without caching it and lets the shared action r
             });
         })
     );
-    const { useTagsStore } = await import('@/stores/tags');
+    const { useTagsStore } = await import('@/entities/tag/store');
     const store = useTagsStore(createPinia());
     await store.loadDirectory();
     expect(store.error).toBe('Tags could not be loaded. Please try again.');
@@ -147,7 +147,7 @@ it('marks expired cached directory data stale during an outage and clears proven
                       more: false,
                   }))
     );
-    const { useTagsStore } = await import('@/stores/tags');
+    const { useTagsStore } = await import('@/entities/tag/store');
     const store = useTagsStore(createPinia());
     await store.loadDirectory();
     unavailable = true;
@@ -159,4 +159,42 @@ it('marks expired cached directory data stale during an outage and clears proven
     unavailable = false;
     await store.loadDirectory();
     expect(store.stale).toBe(false);
+});
+it('stops consuming a paginated directory when Pinia is disposed', async () => {
+    const { useTagsStore } = await import('@/entities/tag/store');
+    const pinia = createPinia();
+    const store = useTagsStore(pinia);
+    const requested: number[] = [];
+    let releasePage!: () => void;
+    const gate = new Promise<void>((resolve) => {
+        releasePage = resolve;
+    });
+    server.use(
+        http.post('https://api.vndb.org/kana/tag', async ({ request }) => {
+            const query = (await request.json()) as { page: number };
+            requested.push(query.page);
+            if (query.page === 1) {
+                await gate;
+            }
+            return HttpResponse.json({
+                results: [{ id: 'g123', name: 'Late tag', searchable: true }],
+                more: query.page === 1,
+            });
+        })
+    );
+    let finished = false;
+    const result = store.loadDirectory().then(() => {
+        finished = true;
+    });
+    try {
+        await vi.waitFor(() => expect(requested).toEqual([1]));
+        disposePinia(pinia);
+        await vi.waitFor(() => expect(finished).toBe(true), { timeout: 500 });
+    } finally {
+        releasePage();
+        await result;
+    }
+    expect(requested).toEqual([1]);
+    expect(store.tags).toEqual([]);
+    expect(store.error).toBe('');
 });

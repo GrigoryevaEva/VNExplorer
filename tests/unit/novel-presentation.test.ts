@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { formatRating } from '@/entities/visual-novel';
+import { formatRating } from '@/entities/visual-novel/model';
 import { formatReleaseDate } from '@/shared/utils/dates';
 
 it('keeps valid publication dates readable and treats invalid parsed dates as unknown', () => {

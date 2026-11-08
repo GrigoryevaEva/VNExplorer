@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { selectionFromQuery, selectionToQuery } from '@/pages/catalog/route';
+import { selectionFromQuery, selectionToQuery } from '@/app/route';
 
 describe('applied Catalog URL conditions', () => {
     it('restores included/excluded tags, match mode, language and pagination from a shared URL', () => {

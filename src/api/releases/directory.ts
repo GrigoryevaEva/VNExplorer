@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { IRequestOptions } from '@/api/client';
 import { queryVndb } from '@/api/client';
 import { VNDB_ENDPOINTS, VNDB_FIELDS, VNDB_OPERATORS } from '@/api/protocol';
-import type { IReleaseAssignment } from '@/entities/release';
+import type { IReleaseAssignment } from '@/entities/release/model';
 
 import { RELEASE_DIRECTORY_FIELDS, RELEASE_PAGE_SIZE } from './constants';
 

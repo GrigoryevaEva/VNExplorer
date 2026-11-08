@@ -5,8 +5,8 @@ import type { DeepReadonly } from 'vue';
 
 import { afterEach, beforeEach, expect, expectTypeOf, it, vi } from 'vitest';
 
-import type { IVisualNovelCard } from '@/entities/visual-novel';
-import { useSavedStore } from '@/stores/saved';
+import { useSavedStore } from '@/entities/saved/store';
+import type { IVisualNovelCard } from '@/entities/visual-novel/model';
 
 let pinia: Pinia;
 const amber = { id: 'v1', title: 'Amber', released: '2001', rating: 95, image: null };

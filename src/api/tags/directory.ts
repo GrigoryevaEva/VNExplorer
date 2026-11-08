@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { queryVndb } from '@/api/client';
 import { VNDB_ENDPOINTS, VNDB_FIELDS } from '@/api/protocol';
-import type { IDirectoryTag } from '@/entities/tag';
+import type { IDirectoryTag } from '@/entities/tag/model';
 
 import { TAG_DIRECTORY_FIELDS, TAG_DIRECTORY_PAGE_SIZE } from './constants';
 
@@ -16,6 +16,7 @@ const tagSchema = z.looseObject({
 type TTagDto = z.infer<typeof tagSchema>;
 
 interface ITagDirectoryOptions {
+    signal?: AbortSignal;
     onProgress?: (count: number) => void;
     onStale?: () => void;
 }
@@ -40,7 +41,7 @@ export const fetchTagDirectory = async (
                 results: TAG_DIRECTORY_PAGE_SIZE,
                 page,
             },
-            { schema: tagSchema, onStale: options.onStale }
+            { schema: tagSchema, signal: options.signal, onStale: options.onStale }
         );
         for (const tag of response.results) {
             if (tag.searchable) {

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { IReleaseDetails } from '@/entities/release';
+import type { IReleaseDetails } from '@/entities/release/model';
 
 export const releaseDetailsSchema = z.looseObject({
     id: z.string().regex(/^r[1-9]\d*$/),

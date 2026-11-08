@@ -80,6 +80,29 @@ export default ts.config(
             'vue/block-order': ['error', { order: ['script', 'template', 'style'] }],
         },
     },
+    {
+        files: ['src/{app,components,pages,shared}/**/*.{ts,vue}'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    paths: [
+                        {
+                            name: '@/api/client',
+                            importNames: ['queryVndb'],
+                            message: 'Call a domain store action to load VNDB data.',
+                        },
+                    ],
+                    patterns: [
+                        {
+                            regex: '^@/api/(?!client$|protocol$)',
+                            message: 'Call a domain store action to load VNDB data.',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
     // Disable formatting conflicts after all presets and overrides. Re-enable
     // the compatible all-braces convention (Prettier's preset disables curly).
     prettier,

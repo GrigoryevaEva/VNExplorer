@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { toggleCatalogTag } from '@/entities/catalog';
+import { toggleCatalogTag } from '@/entities/catalog/model';
 
 it('replaces opposite draft tag actions and toggles the same action without mutating the input', () => {
     const original = { includedTags: ['g96'], excludedTags: ['g2'] };

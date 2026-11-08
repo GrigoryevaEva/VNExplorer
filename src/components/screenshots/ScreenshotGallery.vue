@@ -1,11 +1,11 @@
 <script setup lang="ts">
     import { ref } from 'vue';
 
-    import type { INovelScreenshot } from '@/entities/visual-novel';
+    import type { INovelScreenshot } from '@/entities/visual-novel/model';
 
-    import ScreenshotThumbnails from './ScreenshotThumbnails.vue';
-    import ScreenshotViewer from './ScreenshotViewer.vue';
-    defineProps<{ screenshots: INovelScreenshot[] }>();
+    import ScreenshotThumbnails from './ui/ScreenshotThumbnails.vue';
+    import ScreenshotViewer from './ui/ScreenshotViewer.vue';
+    defineProps<{ screenshots: readonly INovelScreenshot[] }>();
     const viewer = ref<InstanceType<typeof ScreenshotViewer>>();
 </script>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { VNDB_STALE_MESSAGE } from './constants';
+    import { VNDB_STALE_MESSAGE } from './model/constants';
 </script>
 
 <template>

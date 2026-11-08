@@ -1,7 +1,7 @@
 import type { IRequestOptions } from '@/api/client';
 import { queryVndb } from '@/api/client';
 import { CARD_FIELDS, VNDB_ENDPOINTS, VNDB_FIELDS, VNDB_OPERATORS } from '@/api/protocol';
-import type { IVisualNovelCard } from '@/entities/visual-novel';
+import type { IVisualNovelCard } from '@/entities/visual-novel/model';
 
 import { mapNovelCard, novelCardSchema } from './cards';
 import { SAVED_CARD_BATCH_SIZE, SAVED_CARD_RESULTS_LIMIT } from './constants';

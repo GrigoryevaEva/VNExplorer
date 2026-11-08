@@ -1,15 +1,28 @@
 <script setup lang="ts">
+    import { storeToRefs } from 'pinia';
+    import { onBeforeUnmount, watch } from 'vue';
+
     import { VNDB_SITE_URL } from '@/api/protocol';
+    import { catalogTagLocation, useCatalogReturn, useNovelRouteId } from '@/app/route';
+    import { CoverImage } from '@/components/cover-image';
     import { ReleaseGroups } from '@/components/releases';
-    import { SaveButton } from '@/components/saved';
+    import { SaveButton } from '@/components/save-button';
     import { ScreenshotGallery } from '@/components/screenshots';
-    import { CoverImage } from '@/components/visual-novel';
+    import { SourceDescription } from '@/components/source-description';
     import { CacheNotice } from '@/components/vndb-feedback';
-    import { formatPlayTime, formatRating } from '@/entities/visual-novel';
-    import { SourceDescription } from '@/shared/ui/source-description';
+    import { formatPlayTime, formatRating } from '@/entities/visual-novel/model';
+    import { useNovelDetailsStore } from '@/entities/visual-novel/store';
+    import { BackLink } from '@/shared/ui/components/back-link';
     import { formatReleaseDate } from '@/shared/utils/dates';
 
-    import { catalogTagQuery, useNovelDetails } from './useNovelDetails';
+    const returnToCatalog = useCatalogReturn();
+    const novelId = useNovelRouteId();
+    const store = useNovelDetailsStore();
+    const {
+        load,
+        retry,
+        clear,
+    } = store;
 
     const {
         novel,
@@ -18,20 +31,20 @@
         stale,
         titles,
         tags,
-        load,
-        returnToCatalog,
-    } = useNovelDetails();
+    } = storeToRefs(store);
+
+    watch(novelId, (id) => void load(id), { immediate: true });
+    onBeforeUnmount(clear);
 </script>
 
 <template>
     <div class="detail-page">
-        <RouterLink
+        <BackLink
             to="/"
-            class="detail-back"
             @click="returnToCatalog"
         >
             ← Catalog
-        </RouterLink>
+        </BackLink>
 
         <CacheNotice v-if="stale && !loading" />
         <div
@@ -56,7 +69,7 @@
             <p>{{ error }}</p>
             <button
                 class="button button--lime"
-                @click="load"
+                @click="retry"
             >
                 Try again ↗
             </button>
@@ -161,12 +174,7 @@
                         v-for="tag in tags"
                         :key="tag.id"
                     >
-                        <RouterLink
-                            :to="{
-                                name: 'catalog',
-                                query: catalogTagQuery(tag.id),
-                            }"
-                        >
+                        <RouterLink :to="catalogTagLocation(tag.id)">
                             {{ tag.name }}
                         </RouterLink>
                     </li>
@@ -194,14 +202,6 @@
         max-width: 1240px;
         margin: auto;
         padding: 30px 38px 80px;
-    }
-
-    .detail-back {
-        display: inline-block;
-        margin-bottom: 30px;
-        font-size: var(--font-size-body);
-        text-decoration: none;
-        color: var(--mint);
     }
 
     .detail-hero {

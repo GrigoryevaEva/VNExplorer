@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { createPinia, disposePinia } from 'pinia';
+
 import { mount } from '@vue/test-utils';
 import axios from 'axios';
 import { http, HttpResponse } from 'msw';
@@ -62,7 +64,11 @@ it('queues simultaneous language expansions and reuses a multilingual release ac
     // MSW's Node server intercepts HTTP, while jsdom supplies only the rendering lifecycle.
     axios.defaults.adapter = 'http';
     const { ReleaseGroups } = await import('@/components/releases');
-    const wrapper = mount(ReleaseGroups, { props: { novelId: 'v731' } });
+    const pinia = createPinia();
+    const wrapper = mount(ReleaseGroups, {
+        props: { novelId: 'v731' },
+        global: { plugins: [pinia] },
+    });
     try {
         await vi.waitFor(() => expect(wrapper.text()).toContain('English'));
         expect(wrapper.findAll('[role=region]')).toHaveLength(0);
@@ -86,5 +92,6 @@ it('queues simultaneous language expansions and reuses a multilingual release ac
     } finally {
         finish();
         wrapper.unmount();
+        disposePinia(pinia);
     }
 });

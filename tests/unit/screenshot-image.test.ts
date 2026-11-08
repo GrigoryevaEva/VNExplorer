@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import { expect, it } from 'vitest';
 
 import { ScreenshotGallery } from '@/components/screenshots';
-import type { INovelScreenshot } from '@/entities/visual-novel';
+import type { INovelScreenshot } from '@/entities/visual-novel/model';
 
 const screenshot = (thumbnail: string): INovelScreenshot => ({
     id: 'sf1',

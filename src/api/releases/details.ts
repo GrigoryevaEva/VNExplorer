@@ -2,7 +2,7 @@ import { cacheLifetime, queryKey, readResponse, writeResponse } from '@/api/cach
 import type { IRequestOptions } from '@/api/client';
 import { isTemporaryVndbError, queryVndb, VNDB_ERROR_KINDS, VndbError } from '@/api/client';
 import { VNDB_ENDPOINTS, VNDB_FIELDS, VNDB_OPERATORS } from '@/api/protocol';
-import type { IReleaseDetails } from '@/entities/release';
+import type { IReleaseDetails } from '@/entities/release/model';
 
 import { RELEASE_DETAIL_FIELDS, RELEASE_PAGE_SIZE, RELEASE_RECORD_ENDPOINT } from './constants';
 import { mapReleaseDetails, releaseDetailsSchema } from './schema';

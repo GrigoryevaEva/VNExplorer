@@ -2,7 +2,7 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import { SourceDescription } from '@/shared/ui/source-description';
+import { SourceDescription } from '@/components/source-description';
 
 describe('source description rendering', () => {
     it('keeps paired formatting across paragraphs and renders executable markup as text', () => {

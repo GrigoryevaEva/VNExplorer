@@ -3,7 +3,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, expect, it } from 'vitest';
 
 import { fetchNovelDetails } from '@/api/visual-novels';
-import { alternativeTitles, formatPlayTime, spoilerFreeTags } from '@/entities/visual-novel';
+import { alternativeTitles, formatPlayTime, spoilerFreeTags } from '@/entities/visual-novel/model';
 
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
