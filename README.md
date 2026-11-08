@@ -43,7 +43,7 @@ jsdom. Playwright remains a separate browser suite.
 
 `npm run test:live` performs a small real-browser VNDB check; `npm run test:handoff-live` adds title-alias/page/count/detail evidence. All six live commands share a 24-request budget, a 120-second browser deadline and a 10-second startup deadline; tag probes use only two tiny pages. Live checks depend on VNDB availability and limits; they are not part of the repeatable suite. Screenshots from static checks are written to `test-results/static-handoff/` (override with `SMOKE_ARTIFACT_DIR`).
 
-Use a separate `task/<name>` branch based on current `dev` for each task. Include a changeset with the change before merging back.
+Start each branch from current `dev` and include a changeset before merging back. See the [branch and testing policy](.changeset/README.md#branches-and-testing).
 
 ## Build and deploy
 
