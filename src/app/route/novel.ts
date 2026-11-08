@@ -1,7 +1,13 @@
 import { computed } from 'vue';
+import type { RouteLocationRaw } from 'vue-router';
 import { useRoute } from 'vue-router';
 
 import { NOVEL_ID_PATTERN } from './constants';
+
+export const novelLocation = (id: string): RouteLocationRaw => ({
+    name: 'novel',
+    params: { id },
+});
 
 export const useNovelRouteId = () => {
     const route = useRoute();

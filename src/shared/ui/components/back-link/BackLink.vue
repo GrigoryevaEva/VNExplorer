@@ -21,8 +21,4 @@
         text-decoration: none;
         color: var(--mint);
     }
-
-    .back-link:hover {
-        text-decoration: underline;
-    }
 </style>

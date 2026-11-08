@@ -1,14 +1,16 @@
 <script setup lang="ts">
-    import { onMounted, ref } from 'vue';
+    import { computed, onMounted, ref } from 'vue';
 
     import { useResizeObserver } from '@vueuse/core';
 
+    import { novelLocation } from '@/app/route';
     import { CoverImage } from '@/components/cover-image';
     import type { IVisualNovelCard } from '@/entities/visual-novel/model';
     import { formatRating } from '@/entities/visual-novel/model';
     import { formatReleaseDate } from '@/shared/utils/dates';
-    defineProps<{ novel: IVisualNovelCard; index?: number }>();
+    const props = defineProps<{ novel: IVisualNovelCard; index?: number }>();
     const card = ref<HTMLElement>();
+    const detailLocation = computed(() => novelLocation(props.novel.id));
     // Measure natural height, never the allocated grid area: spanning rows cannot
     // feed back into this observation. VueUse disconnects on unmount.
     const measure = (): void => {
@@ -30,7 +32,7 @@
         class="novel-card"
     >
         <RouterLink
-            :to="`/vn/${novel.id}`"
+            :to="detailLocation"
             class="novel-card__art"
             :aria-label="`Open ${novel.title}`"
         >
@@ -51,7 +53,7 @@
 
         <div class="novel-card__ticket">
             <h2 class="novel-card__title">
-                <RouterLink :to="`/vn/${novel.id}`">{{ novel.title }}</RouterLink>
+                <RouterLink :to="detailLocation">{{ novel.title }}</RouterLink>
             </h2>
             <div class="novel-card__facts">
                 <span class="novel-card__date">{{ formatReleaseDate(novel.released) }}</span>
