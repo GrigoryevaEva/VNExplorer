@@ -25,9 +25,6 @@ dist-ssr
 
 # Local agent skill configuration
 /AGENTS.md
-/docs/agents/issue-tracker.md
-/docs/agents/triage-labels.md
-/docs/agents/domain.md
 
 # Local agent planning and execution
 /.scratch/
@@ -35,11 +32,7 @@ dist-ssr
 /.codex/
 /.worktrees/
 /GLOSSARY.md
-/docs/product-design.md
-/docs/architecture.md
-/docs/adr/
-/docs/archive/
-/docs/refactoring-plan.md
+/docs/
 
 # Browser test artifacts
 /playwright-report/

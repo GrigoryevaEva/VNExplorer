@@ -1,0 +1,1 @@
+export { useCatalogResultsStore } from './store';

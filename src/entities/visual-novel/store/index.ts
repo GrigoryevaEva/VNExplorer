@@ -1,0 +1,1 @@
+export { useNovelDetailsStore } from './store';

@@ -1,0 +1,2 @@
+@custom-media --viewport-compact (width <= 1050px);
+@custom-media --viewport-mobile (width <= 760px);
